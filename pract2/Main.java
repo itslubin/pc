@@ -4,8 +4,11 @@ public class Main {
 	
 	public static void main(String[] args) {
 		
+		/*Algoritmo para LockRompeEmpate, LockTicket y LockBakery para N procesos */
+		
+		// M es N/2
 		int N = 10;
-		Lock lock = new LockRompeEmpate(N);
+		Lock lock = new LockBakery(N);
 	    Entero n = new Entero();
 	    Thread[] threads = new Thread[N];
 	    
@@ -31,5 +34,7 @@ public class Main {
 	    
 	    
 	    System.out.println(n.getn());
+		
+		
 	}
 }
