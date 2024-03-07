@@ -1,3 +1,5 @@
+package pract3;
+
 public class Consumidor extends Thread {
     private Almacen almacen;
     private int C;

@@ -1,3 +1,5 @@
+package pract3;
+
 public class Productor extends Thread {
     private Almacen almacen;
     private int P;

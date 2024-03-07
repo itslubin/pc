@@ -1,3 +1,5 @@
+package pract3;
+
 public class Producto {
     private String prod;
     public Producto() {

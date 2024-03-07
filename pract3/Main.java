@@ -1,3 +1,5 @@
+package pract3;
+
 public class Main {
     public static void main(String[] args) throws InterruptedException {
         int P = 10;

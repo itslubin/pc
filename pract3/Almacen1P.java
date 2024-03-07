@@ -1,3 +1,5 @@
+package pract3;
+
 import java.util.concurrent.Semaphore;
 
 
