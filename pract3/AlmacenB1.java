@@ -3,15 +3,14 @@ package pract3;
 import java.util.concurrent.Semaphore;
 
 
-public class Almacen1P implements Almacen {
+public class AlmacenB1 implements Almacen {
     Producto buf;
-    private volatile int num = 0;
     private Semaphore empty;
     private Semaphore full;
 
     private Boolean im_empty;
 
-    public Almacen1P() {
+    public AlmacenB1() {
         this.empty = new Semaphore(1);
         this.full = new Semaphore(0);
         this.im_empty = true;

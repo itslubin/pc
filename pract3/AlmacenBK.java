@@ -3,7 +3,7 @@ package pract3;
 import java.util.concurrent.Semaphore;
 
 
-public class AlmacenNP implements Almacen {
+public class AlmacenBK implements Almacen {
     int N = 10;
     Producto buf[];
     private volatile int front = 0;
@@ -13,7 +13,7 @@ public class AlmacenNP implements Almacen {
     private Semaphore mutexP;
     private Semaphore mutexC;
 
-    public AlmacenNP() {
+    public AlmacenBK() {
         this.empty = new Semaphore(N);
         this.full = new Semaphore(0);
         this.mutexC = new Semaphore(1);

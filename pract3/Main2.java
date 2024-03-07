@@ -1,14 +1,17 @@
 package pract3;
 
-public class Main {
+public class Main2 {
     public static void main(String[] args) throws InterruptedException {
-        int P = 10;
-        int C = 10;
-        int N = 5;
-        int M = 5;
+    	
+    	/*Vamos a tener en total C * M consumiciones y P * N producciones*/
+    	
+        int P = 10; // Numero de iteraciones de los productores
+        int C = 10; // Numero de iteraciones de los consumidores
+        int N = 5; // Numero de procesos productores
+        int M = 5; // Numero de procesos consumidores
 
 
-        Almacen almacen = new AlmacenNP();
+        Almacen almacen = new AlmacenBK();
         Thread[] threads = new Thread[N+M];
 
         for (int i = 0; i < N; ++i) {
