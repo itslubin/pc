@@ -13,7 +13,7 @@ public class MiThreadDecr extends Thread{
 
     @Override
     public void run() {
-    	for (int i = 0; i < 10000; i++) {
+    	for (int i = 0; i < 1000; i++) {
     		lock.takeLock(id);
             
     		n.decrease();

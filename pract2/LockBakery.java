@@ -20,12 +20,12 @@ public class LockBakery implements Lock{
 	public void takeLock(int id) {
 		// TODO Auto-generated method stub
 		turn[id] = 1;
+		turn = turn;
 		turn[id] = Arrays.stream(turn).max().orElseThrow() + 1;
+		turn = turn;
 		for (int k = 1; k <= N; ++k) {
 			if (k != id) {
-				while (turn[k] != 0 && comp(turn[id], id, turn[k], k)) {
-					Thread.yield();
-				};
+				while (turn[k] != 0 && comp(turn[id], id, turn[k], k));
 			}
 		}
 	}
@@ -34,6 +34,7 @@ public class LockBakery implements Lock{
 	public void releaseLock(int id) {
 		// TODO Auto-generated method stub
 		turn[id] = 0;
+		turn = turn;
 	}
 
 }

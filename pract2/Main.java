@@ -8,7 +8,7 @@ public class Main {
 		
 		// M es N/2
 		int N = 10;
-		Lock lock = new LockBakery(N);
+		Lock lock = new LockTicket(N);
 	    Entero n = new Entero();
 	    Thread[] threads = new Thread[N];
 	    

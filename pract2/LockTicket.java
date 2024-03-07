@@ -19,10 +19,12 @@ public class LockTicket implements Lock{
 	public void takeLock(int id) {
 		// TODO Auto-generated method stub
 		turn[id] = number.getAndAdd(1);
-		while(turn[id] != next) {
-			// Add a small delay to reduce memory contention as some thread might be checking the condition (access to "next") constantly without giving other threads a chance to proceed
-            Thread.yield(); // The Thread.yield() method is a way for a thread to voluntarily give up its current time slice and allow other threads to run. 
-		}
+		turn = turn;
+		while(turn[id] != next);
+//		while(turn[id] != next) {
+//			// Add a small delay to reduce memory contention as some thread might be checking the condition (access to "next") constantly without giving other threads a chance to proceed
+//            Thread.yield(); // The Thread.yield() method is a way for a thread to voluntarily give up its current time slice and allow other threads to run.
+//		}
 	}
 
 	@Override
