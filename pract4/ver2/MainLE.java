@@ -1,6 +1,6 @@
-package pract3;
+package pract4.ver2;
 
-public class Main3 {
+public class MainLE {
     public static void main(String[] args) throws InterruptedException {
     	
     	int P = 10; // Numero de iteraciones de los Writer
@@ -8,8 +8,7 @@ public class Main3 {
         int N = 10; // Numero de procesos Writer
         int M = 10; // Numero de procesos Reader
 
-
-        AlmacenLB almacen = new AlmacenLB();
+        AlmacenLE almacen = new AlmacenLE();
         Thread[] threads = new Thread[N+M];
 
         for (int i = 0; i < N; ++i) {

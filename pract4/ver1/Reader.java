@@ -1,12 +1,12 @@
-package pract3;
+package pract4.ver1;
 
 public class Reader extends Thread {
-    private AlmacenLB almacen;
+    private AlmacenLE almacen;
     private int C;
 
     private int id;
 
-    public Reader(AlmacenLB almacen, int C, int id) {
+    public Reader(AlmacenLE almacen, int C, int id) {
         this.almacen = almacen;
         this.C = C;
         this.id = id;

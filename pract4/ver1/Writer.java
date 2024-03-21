@@ -1,11 +1,11 @@
-package pract3;
+package pract4.ver1;
 
 public class Writer extends Thread {
-    private AlmacenLB almacen;
+    private AlmacenLE almacen;
     private int P;
     private int id;
 
-    public Writer(AlmacenLB almacen, int P, int id) {
+    public Writer(AlmacenLE almacen, int P, int id) {
         this.almacen = almacen;
         this.P = P;
         this.id = id;
