@@ -11,8 +11,8 @@ public class AlmacenPC implements Almacen {
     private Queue<Producto> buf;
     
     private Lock lock;
-    private Condition con;
-    private Condition pro;
+    private Condition con; // cola de consumidores
+    private Condition pro; // cola de productores
 
     public AlmacenPC() {
         lock = new ReentrantLock();
@@ -45,7 +45,7 @@ public class AlmacenPC implements Almacen {
                 con.await(); // wait until there is a product in the buffer
             }
             prod = buf.remove();
-            pro.signalAll(); // notify that there is space in the buffer
+            pro.signal(); // notify that there is space in the buffer
         } catch (Exception e){
             e.printStackTrace();
         }

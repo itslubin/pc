@@ -37,12 +37,14 @@ public class AlmacenLB {
             e.acquire();
             nw--;
             if(dw > 0){
-                dw--;
-                w.release();
-            } else if(dr > 0){
+	            dw--;
+	            w.release();
+            }
+            else if(dr > 0){
                 dr--;
                 r.release();
-            } else {
+            }
+            else {
                 e.release();
             }
 

@@ -18,7 +18,7 @@ public class AlmacenPC implements Almacen {
                 wait(); // wait until there is space in the buffer
             }
             buf.add(producto);
-            notify(); // notify that there is a new product in the buffer
+            notifyAll(); // notify that there is a new product in the buffer
         } catch (Exception e){
             e.printStackTrace();
         }
@@ -33,7 +33,7 @@ public class AlmacenPC implements Almacen {
                 wait(); // wait until there is a product in the buffer
             }
             prod = buf.remove();
-            notify(); // notify that there is space in the buffer
+            notifyAll(); // notify that there is space in the buffer
         } catch (Exception e){
             e.printStackTrace();
         }
