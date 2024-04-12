@@ -9,6 +9,7 @@ public class AlmacenLE {
     Producto buf[];
     int nr = 0;
     int nw = 0;
+    int dw = 0;
     private Lock lock;
     private Condition oktoread;
     private Condition oktowrite;
@@ -21,7 +22,7 @@ public class AlmacenLE {
     }
 
     public void request_read() {
-        while (nw > 0) {
+        while (nw > 0) { // Solucion 2: añadir || dr > 0
             try {
                 oktoread.await();
             } catch (InterruptedException e) {
@@ -34,11 +35,13 @@ public class AlmacenLE {
     public void release_read() {
         nr--;
         if (nr==0) oktowrite.signal();
+        
     }
 
     public void request_write() {
         while (nr > 0 || nw > 0) {
             try {
+            	dw++;
                 oktowrite.await();
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -49,8 +52,14 @@ public class AlmacenLE {
 
     public void release_write() {
         nw--;
-        oktowrite.signal();
-        oktoread.signalAll();
+        if (dw > 0) {
+        	dw--;
+        	oktowrite.signal();
+        }
+        else {
+        	oktoread.signalAll();
+        }
+        // Para solucion justa 2: cambiar orden de condiciones
     }
 
     public void escribir(Producto producto, int pos) {
