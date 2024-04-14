@@ -22,7 +22,7 @@ public class AlmacenLE {
     }
 
     public void request_read() {
-        while (nw > 0) { // Solucion 2: añadir || dr > 0
+        while (nw > 0) { // Solucion 2 justa, writers y reades intercalados: añadir || dw > 0
             try {
                 oktoread.await();
             } catch (InterruptedException e) {
@@ -57,9 +57,9 @@ public class AlmacenLE {
         	oktowrite.signal();
         }
         else {
-        	oktoread.signalAll();
+        	oktoread.signal();
         }
-        // Para solucion justa 2: cambiar orden de condiciones
+        // Solucion justa 2, writers y reades intercalados: cambiar orden de condiciones y añadir variable dr
     }
 
     public void escribir(Producto producto, int pos) {
