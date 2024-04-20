@@ -7,4 +7,21 @@ public class ConexionCliente {
     private Usuario usuario;
 
     // Constructor, getters y setters
+    public ConexionCliente(Socket socket, Usuario usuario) {
+        this.socket = socket;
+        this.usuario = usuario;
+    }
+
+    public Socket getSocket() {
+        return socket;
+    }
+
+    public Usuario getUsuario() {
+        return usuario;
+    }
+
+    /* public void sendFile(String filename, ) {
+
+    } */
+    
 }

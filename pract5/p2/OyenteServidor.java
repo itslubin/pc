@@ -1,13 +1,81 @@
 package pract5.p2;
 
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
+import java.util.Scanner;
+
 public class OyenteServidor implements Runnable {
-    private Servidor servidor;
+	// Constructor y método run para la escucha del servidor
+	Cliente cliente;
+	Socket clientSocket;
+	String host;
+	int port;
+	int ClientID;
+	int ServerID;
+
+	public OyenteServidor(Cliente cliente, String host, int port) {
+		this.cliente = cliente;
+		this.host = host;
+		this.port = port;
+	}
 
 	@Override
 	public void run() {
-		// TODO Auto-generated method stub
-		
+		try {
+			Mensaje mensaje;
+			Scanner scanner = new Scanner(System.in);
+
+			// Conecta al servidor en el puerto 1234 en localhost
+			clientSocket = new Socket(host, port);
+
+			// Obtén los streams de entrada y salida para comunicarte con el servidor
+			ObjectOutputStream out = new ObjectOutputStream(clientSocket.getOutputStream());
+			ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
+
+			// Envía el nombre del archivo que se desea obtener
+			// TODO: clientID y serverID como mandamos los datos ya inicializados si el
+			// servidor no sabe quienes somos??
+			out.writeObject(new MensajeString(0, 0, cliente.getNombre()));
+
+			// Mostrar menú
+			mensaje = (Mensaje) in.readObject();
+			ClientID = mensaje.getIdTo();
+			ServerID = mensaje.getIdFrom();
+			cliente.setClientID(ClientID);
+			cliente.setServerID(ServerID);
+			
+			if (mensaje.getTipo() == 8) { // Recibimos el menu
+				System.out.println(((MensajeString) mensaje).getContenido());
+				int op = scanner.nextInt();
+				
+				// Envía la opción seleccionada
+				out.writeObject(new MensajeInt(ClientID, ServerID, op));
+
+				if (op == 1) {
+					// Recibe la lista de usuarios registrados
+					mensaje = (Mensaje) in.readObject();
+					if (mensaje.getTipo() == 8) {
+						System.out.println(((MensajeString) mensaje).getContenido());
+					} else {
+						System.out.println("Error al recibir la lista de usuarios");
+					}
+
+					// Confirmar la recepción de la lista de usuarios registradosd
+					out.writeObject(new MensajeString(cliente.getClientID(), cliente.getServerID(), "Confirmación de recepción de la lista de usuarios registrados"));
+
+				}
+			} else {
+				System.out.println("Error al recibir el mensaje");
+			}
+
+			// Cierra el scanner y la conexión
+			scanner.close();
+			clientSocket.close();
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
-    // Constructor y método run para la escucha del servidor
 }
