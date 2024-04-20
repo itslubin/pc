@@ -1,65 +1,93 @@
 package pract5.p2;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-
-import pract5.p1.Mensaje;
+import java.util.List;
 
 public class OyenteCliente implements Runnable {
-	// Lista compartida de los usuarios conectados
+    // Constructor y método run para la escucha del cliente
+
+    // Lista compartida de los usuarios conectados
+    private Usuario usuario;
+    private Servidor servidor;
     private Socket clientSocket;
-    
-    public OyenteCliente(Socket clientSocket) {
+
+    public OyenteCliente(Socket clientSocket, Servidor servidor) {
         this.clientSocket = clientSocket;
+        this.servidor = servidor;
     }
 
-	@Override
-	public void run() {
-		// TODO Auto-generated method stub
-		try {
+    @Override
+    public void run() {
+        try {
             // Obtiene los streams de entrada y salida para comunicarse con el cliente
-        	ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
-        	ObjectOutputStream out = new ObjectOutputStream(clientSocket.getOutputStream());
-        	
-        	// Pide el nombre y manda sus datos
-        	out.writeObject(new MensajeString("Indique el nombre de usuario: \n"));
-        	
-        	in.readObject();
-        	
-        	// Añadirlo a la tabla el cliente 
-        	
-        	// ¿como se puede añadir un cliente a la table?
-        	// ¿que identificador le pongo al cliente?
-        	
-        	
-            
-            // Lee el nombre del archivo que el cliente quiere obtener
-            Mensaje mensaje = (Mensaje) in.readObject();
-            StringBuilder line = new StringBuilder();
-            // Abre el archivo y envía su contenido al cliente
-            try (BufferedReader fileReader = new BufferedReader(new FileReader(mensaje.getContenido()))) {
-                String line2;
-                while ((line2 = fileReader.readLine()) != null) {
-                	line.append(line2);
-                }
-            } catch (IOException e) {
-                // Si hay un error al leer el archivo, envía un mensaje de error al cliente
-                line.append("Error al leer el archivo: " + e.getMessage());
+            ObjectOutputStream out = new ObjectOutputStream(clientSocket.getOutputStream());
+            ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
+
+            Mensaje mensaje;
+            int clientID = servidor.getNewId();
+
+            // Obtiene el nombre del cliente
+            mensaje = (Mensaje) in.readObject();
+            if (mensaje.getTipo() == 8) {
+                usuario = new Usuario(clientID, ((MensajeString) mensaje).getContenido(),
+                        clientSocket.getInetAddress().getHostAddress());
+                        
+                // Añadirlo a la tabla el cliente
+                servidor.registrarUsuario(usuario);
+                
+                servidor.addConexion(new ConexionCliente(clientSocket, usuario));
             }
-            
-            out.writeObject(new Mensaje(line.toString()));
-            
+
+            while (true) {
+                String menu = servidor.getMenu();
+                out.writeObject(new MensajeString(servidor.getID(), usuario.getId(), menu));
+
+                mensaje = (Mensaje) in.readObject();
+                if (mensaje.getTipo() == 9) {
+                    int op = ((MensajeInt) mensaje).getContenido();
+
+                    if (op == 1) {
+                        List<ConexionCliente> clientes = servidor.getConexionesClientes();
+                        int contador = 1;
+                        String listaUsuarios = "Usuarios conectados:\n";
+                        for (ConexionCliente c : clientes) {
+                            Usuario u = c.getUsuario();
+                            listaUsuarios += contador++ + ". " + u.getNombreUsuario() + " | ID: " + u.getId() + "\n";
+                            listaUsuarios += "Información compartida:\n";
+                            int contador2 = 1;
+                            for (Informacion i : u.getInformacionCompartida()) {
+                                listaUsuarios += contador2++ + ". " + i.getNombre() + "\n";
+                            }
+                        }
+                        out.writeObject(new MensajeString(servidor.getID(), usuario.getId(), listaUsuarios));
+
+                    } else if (op == 2) {
+                        mensaje = (Mensaje) in.readObject();
+                        String filename = ((MensajeString) mensaje).getContenido();
+                        List<ConexionCliente> clientes = servidor.getConexionesClientes();
+                        for (ConexionCliente c : clientes) {
+                            Usuario u = c.getUsuario();
+                            for (Informacion i : u.getInformacionCompartida()) {
+                                if (i.getNombre().equals(filename)) {
+                                    
+                                }
+                            }
+                        }
+                        
+                    } else if (op == 3) {
+                        break;
+                    }
+
+                }
+            }
+
             // Cierra la conexión
             clientSocket.close();
-        
         } catch (Exception e) {
             e.printStackTrace();
         }
-	}
+    }
 
-    // Constructor y método run para la escucha del cliente
 }
