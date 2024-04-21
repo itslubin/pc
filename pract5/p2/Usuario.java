@@ -6,7 +6,7 @@ public class Usuario {
     private int id;
     private String nombreUsuario;
     private String direccionIP;
-    private List<Informacion> informacionCompartida;
+    private List<Informacion> informacionCompartida; // Lista de fichero a la que tiene acceso
 
     public Usuario(int id, String nombreUsuario, String direccionIP) {
         this.id = id;
@@ -15,7 +15,7 @@ public class Usuario {
         this.informacionCompartida = new java.util.ArrayList<>();
     }
     
-    // Añadir la lista de ficheros que tiene almacenado, estos unicamente estan en el proyecto, cuando lo pide
+    // Nota: Añadir la lista de ficheros que tiene almacenado, estos unicamente estan en el proyecto, cuando lo pide
     // lo lee entero y lo manda al usuario que toca
 
     // Constructor, getters y setters

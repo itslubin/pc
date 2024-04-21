@@ -27,7 +27,9 @@ public class OyenteCliente implements Runnable {
 
             Mensaje mensaje;
             int clientID = servidor.getNewId();
-
+            
+            // TODO: Añadir op para ver si es usuario ya registrado o no (0 en caso de no existir y >0 en caso de existir)
+            
             // Obtiene el nombre del cliente
             mensaje = (Mensaje) in.readObject();
             if (mensaje.getTipo() == 8) {
@@ -62,6 +64,7 @@ public class OyenteCliente implements Runnable {
                             }
                         }
                         out.writeObject(new MensajeString(servidor.getID(), usuario.getId(), listaUsuarios));
+                        // TODO: Recibir la confirmacion de la lista del OyenteServidor
 
                     } else if (op == 2) {
                         mensaje = (Mensaje) in.readObject();
