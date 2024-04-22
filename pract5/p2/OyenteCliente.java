@@ -59,11 +59,11 @@ public class OyenteCliente implements Runnable {
                 String menu = servidor.getMenu();
                 out.writeObject(new MensajeMenu(servidor.getID(), c.getClientID(), menu));
 
-                mensaje = (Mensaje) in.readObject();
-                if (mensaje.getTipo() == 9) { // Obtenemos la opcion
+                mensaje = (Mensaje) in.readObject(); // Obtenemos la opcion
+                if (mensaje.getTipo() == 9) { 
                     int op = ((MensajeOp) mensaje).getContenido();
 
-                    if (op == 1) {
+                    if (op == 1) { // El cliente quiere la lista
                         Map<Integer, ConexionCliente> clientes = servidor.getConexionesClientes();
                         int contador = 1;
                         String listaUsuarios = "Usuarios conectados:\n";
@@ -76,10 +76,13 @@ public class OyenteCliente implements Runnable {
                                 listaUsuarios += contador2++ + ". " + i.getNombre() + "\n";
                             }
                         }
-                        out.writeObject(new MensajeString(servidor.getID(), c.getClientID(), listaUsuarios));
-                        // TODO: Recibir la confirmacion de la lista del OyenteServidor
+                        out.writeObject(new MensajeString(servidor.getID(), c.getClientID(), listaUsuarios)); // 3. Manda la lista
+                        // Recibir la confirmacion de la lista del OyenteServidor
+                        Mensaje mConfListaUsuarios = (Mensaje) in.readObject(); // 5. recibimos la confirmacion
+                        // Imprimir por consola la confirmación
+                        System.out.println(((MensajeString) mConfListaUsuarios).getContenido());
 
-                    } else if (op == 2) {
+                    } else if (op == 2) { // El cliente quiere descargar un fichero
                     	boolean found = false;
                         mensaje = (Mensaje) in.readObject();
                         String filename = ((MensajeString) mensaje).getContenido();

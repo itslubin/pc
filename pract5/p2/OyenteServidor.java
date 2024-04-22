@@ -48,22 +48,22 @@ public class OyenteServidor implements Runnable {
 			cliente.setServerID(ServerID);
 			
 			if (mensaje.getTipo() == 11) { // Recibimos el menu
-				System.out.println(((MensajeMenu) mensaje).getContenido());
+				System.out.println(((MensajeMenu) mensaje).getContenido()); 
 				int op = scanner.nextInt();
 				
-				// Envía la opción seleccionada
+				// 1. El cliente pide una opcion
 				out.writeObject(new MensajeOp(ClientID, ServerID, op));
 
 				if (op == 1) {
 					// Recibe la lista de usuarios registrados
 					mensaje = (Mensaje) in.readObject();
-					if (mensaje.getTipo() == 8) {
+					if (mensaje.getTipo() == 8) { // TODO: No debería ser el mensajeListaUsuarios ??
 						System.out.println(((MensajeString) mensaje).getContenido());
 					} else {
 						System.out.println("Error al recibir la lista de usuarios");
 					}
 
-					// Confirmar la recepción de la lista de usuarios registradosd
+					// 4. Confirmar la recepción de la lista de usuarios registrados
 					out.writeObject(new MensajeString(cliente.getClientID(), cliente.getServerID(), "Confirmación de recepción de la lista de usuarios registrados"));
 
 				}
