@@ -12,7 +12,7 @@ public abstract class Mensaje implements Serializable {
 	/* Tipos de mensajes:
 	 * 0: Mensaje de conexion
 	 * 1: Mensaje de lista de usuarios
-	 * 2: Mensaje de pedir fichero
+	 * 2: Mensaje emitir fichero
 	 * 3: Mensaje preparado para recibir fichero CS
 	 * 4: Mensaje preparado para recibir fichero SC
 	 * 5: Mensaje de confirmación conexión

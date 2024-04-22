@@ -38,37 +38,63 @@ public class OyenteServidor implements Runnable {
 			// TODO: clientID y serverID como mandamos los datos ya inicializados si el
 			// servidor no sabe quienes somos??
 			
+			// 1.1 Mandar datos cliente
 			out.writeObject(new MensajeCliente(0, 0, cliente));
-
-			// Mostrar menú
-			mensaje = (Mensaje) in.readObject();
-			ClientID = mensaje.getIdTo();
-			ServerID = mensaje.getIdFrom();
-			cliente.setClientID(ClientID);
-			cliente.setServerID(ServerID);
 			
-			if (mensaje.getTipo() == 11) { // Recibimos el menu
-				System.out.println(((MensajeMenu) mensaje).getContenido()); 
-				int op = scanner.nextInt();
+			while (true) {
 				
-				// 1.1 El cliente pide una opcion
-				out.writeObject(new MensajeOp(ClientID, ServerID, op));
+				mensaje = (Mensaje) in.readObject(); // 2.2 Recibimos el mensaje
+				ClientID = mensaje.getIdTo();
+				ServerID = mensaje.getIdFrom();
+				cliente.setClientID(ClientID);
+				cliente.setServerID(ServerID);
+				
+				if (mensaje.getTipo() == 11) { // Recibimos menu
+					
+					System.out.println(((MensajeMenu) mensaje).getContenido()); 
+					int op = scanner.nextInt();
+					
+					// Limpiar buffer
+					scanner.nextLine();
+					
+					// 1.1 El cliente pide una opcion
+					out.writeObject(new MensajeOp(ClientID, ServerID, op));
 
-				if (op == 1) {
-					// 2.2 Recibe la lista de usuarios registrados
-					mensaje = (Mensaje) in.readObject();
-					if (mensaje.getTipo() == 8) { // TODO: No debería ser el mensajeListaUsuarios ??
-						System.out.println(((MensajeString) mensaje).getContenido());
-					} else {
-						System.out.println("Error al recibir la lista de usuarios");
+					if (op == 1) {
+						// 2.2 Recibe la lista de usuarios registrados
+						mensaje = (Mensaje) in.readObject();
+						if (mensaje.getTipo() == 8) { // TODO: No debería ser el mensajeListaUsuarios ??
+							System.out.println(((MensajeString) mensaje).getContenido());
+						} else {
+							System.out.println("Error al recibir la lista de usuarios");
+						}
+
+						// 3.1 Confirmar la recepción de la lista de usuarios registrados
+						out.writeObject(new MensajeString(cliente.getClientID(), cliente.getServerID(), "Confirmación de recepción de la lista de usuarios registrados"));
+
 					}
-
-					// 3.1 Confirmar la recepción de la lista de usuarios registrados
-					out.writeObject(new MensajeString(cliente.getClientID(), cliente.getServerID(), "Confirmación de recepción de la lista de usuarios registrados"));
-
+					
+					else if (op == 2) { // TODO
+						System.out.println("Introduzca el fichero que quiere descargar: ");
+						String file_name = scanner.nextLine();
+						
+						// out.writeObject(); // 2.1 Enviar el nombre del fichero
+					}
+					
+					else if (op == 3) { // TODO
+						// 2.1 Mandar mensaje de cierre de conexion
+						// 3.2 Recibir confirmacion
+						break;
+					}
+					
+				} 
+				
+				else if (mensaje.getTipo() == 2) { // Recibimos emitir fichero
+					
 				}
-			} else {
-				System.out.println("Error al recibir el mensaje");
+				else {
+					System.out.println("Error al recibir el mensaje");
+				}
 			}
 
 			// Cierra el scanner y la conexión

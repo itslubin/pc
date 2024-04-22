@@ -29,7 +29,7 @@ public class OyenteCliente implements Runnable {
             Mensaje mensaje;
             int clientID = servidor.getNewId();
             
-            // Obtiene el nombre del cliente
+            // 1.2 Obtener el nombre del cliente
             mensaje = (Mensaje) in.readObject();
             
             Cliente c = ((MensajeCliente) mensaje).getCliente();
@@ -54,10 +54,11 @@ public class OyenteCliente implements Runnable {
             
             servidor.addConexion(clientID, new ConexionCliente(clientSocket, usuario));
             
+            
+            String menu = servidor.getMenu();
+            out.writeObject(new MensajeMenu(servidor.getID(), clientID, menu)); //2.1 Mandamos menu
 
             while (true) {
-                String menu = servidor.getMenu();
-                out.writeObject(new MensajeMenu(servidor.getID(), clientID, menu));
 
                 mensaje = (Mensaje) in.readObject(); // 1.2 Obtenemos la opcion
                 if (mensaje.getTipo() == 9) { 
@@ -84,7 +85,7 @@ public class OyenteCliente implements Runnable {
 
                     } else if (op == 2) { // El cliente quiere descargar un fichero
                     	boolean found = false;
-                        mensaje = (Mensaje) in.readObject();
+                        mensaje = (Mensaje) in.readObject(); // 2.2 Recibimos el nombre del fichero
                         String filename = ((MensajeString) mensaje).getContenido();
                         Map<Integer, ConexionCliente> clientes = servidor.getConexionesClientes();
                         for (Map.Entry<Integer, ConexionCliente> c1 : clientes.entrySet()) {
@@ -92,12 +93,24 @@ public class OyenteCliente implements Runnable {
                             for (Informacion i : u.getInformacionCompartida()) { // buscar el archivo solicitado
                                 if (i.getNombre().equals(filename)) {
                                     found = true;
+                                    
                                 }
                             }
                         }
                         
-                    } else if (op == 3) {
-                        break;
+                        // 3.1 Mensaje emitir fichero al usuario emisor
+                        
+                        
+                    } else if (op == 3) { // TODO
+                    	// 2.2 Recibimos el mensaje de cierre de conexion
+                        // Quitamos al Cliente del servidor
+                    	servidor.removeConexion(clientID);
+                    	
+                    	// 3.1 Confirmacion ??
+                    	if (!servidor.hayClientesConectados()) {
+                    		break;
+                    	}
+                    	
                     }
 
                 }

@@ -64,7 +64,7 @@ public class Servidor {
         mutex.release();
     }
 
-    public void removeConexion(int id, ConexionCliente conexion) throws InterruptedException {
+    public void removeConexion(int id) throws InterruptedException {
         mutex.acquire();
         conexionesClientes.remove(id);
         mutex.release();
@@ -95,6 +95,10 @@ public class Servidor {
 
 	public Usuario getUsuario(int clientID) {
 		return usuariosRegistrados.get(clientID);
+	}
+
+	public boolean hayClientesConectados() {
+		return !conexionesClientes.isEmpty();
 	}
 
 }
