@@ -98,8 +98,10 @@ public class OyenteCliente implements Runnable {
                             }
                         }
                         
-                        // 3.1 Mensaje emitir fichero al usuario emisor
+                        // 3.1 Mensaje emitir fichero al cliente emisor
+                        // 4.2 Recibir Mensaje Preparado CS
                         
+                        //5.1 Mensaje Preparado SC al cliente receptor
                         
                     } else if (op == 3) { // TODO
                     	// 2.2 Recibimos el mensaje de cierre de conexion

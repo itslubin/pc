@@ -79,6 +79,8 @@ public class OyenteServidor implements Runnable {
 						String file_name = scanner.nextLine();
 						
 						// out.writeObject(); // 2.1 Enviar el nombre del fichero
+						
+						// 5.2 Recibido Mensaje Preparado SC
 					}
 					
 					else if (op == 3) { // TODO
@@ -90,7 +92,9 @@ public class OyenteServidor implements Runnable {
 				} 
 				
 				else if (mensaje.getTipo() == 2) { // Recibimos emitir fichero
+					// 3.2 Recibir Mensaje emitir fichero
 					
+					// 4.1 Mensaje Preparado CS
 				}
 				else {
 					System.out.println("Error al recibir el mensaje");
