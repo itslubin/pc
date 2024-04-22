@@ -3,13 +3,11 @@ package pract5.p2;
 import java.util.List;
 
 public class Usuario {
-    private int id;
     private String nombreUsuario;
     private String direccionIP;
-    private List<Informacion> informacionCompartida; // Lista de fichero a la que tiene acceso
+    private List<Informacion> informacionCompartida; // Lista de fichero a la que tiene acceso el usuario
 
-    public Usuario(int id, String nombreUsuario, String direccionIP) {
-        this.id = id;
+    public Usuario(String nombreUsuario, String direccionIP) {
         this.nombreUsuario = nombreUsuario;
         this.direccionIP = direccionIP;
         this.informacionCompartida = new java.util.ArrayList<>();
@@ -19,9 +17,6 @@ public class Usuario {
     // lo lee entero y lo manda al usuario que toca
 
     // Constructor, getters y setters
-    public int getId() {
-        return id;
-    }
 
     public String getNombreUsuario() {
         return nombreUsuario;
@@ -36,7 +31,7 @@ public class Usuario {
     }
 
     public String toString() {
-        return id + "," + nombreUsuario + "," + direccionIP + "," + informacionCompartida.size() + ";";
+        return nombreUsuario + "," + direccionIP + "," + informacionCompartida.size() + ";";
     }
     
     // TODO: Hay que leer de la BD y cambiar todos los datos??

@@ -34,9 +34,11 @@ public class OyenteServidor implements Runnable {
 			ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
 
 			// Envía el nombre del archivo que se desea obtener
+			
 			// TODO: clientID y serverID como mandamos los datos ya inicializados si el
 			// servidor no sabe quienes somos??
-			out.writeObject(new MensajeString(0, 0, cliente.getNombre()));
+			
+			out.writeObject(new MensajeCliente(0, 0, cliente));
 
 			// Mostrar menú
 			mensaje = (Mensaje) in.readObject();
@@ -45,12 +47,12 @@ public class OyenteServidor implements Runnable {
 			cliente.setClientID(ClientID);
 			cliente.setServerID(ServerID);
 			
-			if (mensaje.getTipo() == 8) { // Recibimos el menu
-				System.out.println(((MensajeString) mensaje).getContenido());
+			if (mensaje.getTipo() == 11) { // Recibimos el menu
+				System.out.println(((MensajeMenu) mensaje).getContenido());
 				int op = scanner.nextInt();
 				
 				// Envía la opción seleccionada
-				out.writeObject(new MensajeInt(ClientID, ServerID, op));
+				out.writeObject(new MensajeOp(ClientID, ServerID, op));
 
 				if (op == 1) {
 					// Recibe la lista de usuarios registrados

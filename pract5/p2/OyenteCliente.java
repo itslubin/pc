@@ -4,6 +4,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.List;
+import java.util.Map;
 
 public class OyenteCliente implements Runnable {
     // Constructor y método run para la escucha del cliente
@@ -28,53 +29,66 @@ public class OyenteCliente implements Runnable {
             Mensaje mensaje;
             int clientID = servidor.getNewId();
             
-            // TODO: Añadir op para ver si es usuario ya registrado o no (0 en caso de no existir y >0 en caso de existir)
-            
             // Obtiene el nombre del cliente
             mensaje = (Mensaje) in.readObject();
-            if (mensaje.getTipo() == 8) {
-                usuario = new Usuario(clientID, ((MensajeString) mensaje).getContenido(),
+            
+            Cliente c = ((MensajeCliente) mensaje).getCliente();
+            
+            if (c.getClientID() == 0) { // Es un nuevo cliente
+            	usuario = new Usuario(c.getNombre(),
                         clientSocket.getInetAddress().getHostAddress());
                         
-                // Añadirlo a la tabla el cliente
-                servidor.registrarUsuario(usuario);
+                // Añadir el cliente a la tabla
+                servidor.registrarUsuario(clientID, usuario);
                 
-                servidor.addConexion(new ConexionCliente(clientSocket, usuario));
             }
+            
+            else { // Es un usuario existente
+//            	boolean find = servidor.buscarCliente(c.getClientID());
+//            	if (!find) {
+//            		
+//            	}
+            	usuario = servidor.getUsuario(c.getClientID());
+            	
+            }
+            
+            servidor.addConexion(clientID, new ConexionCliente(clientSocket, usuario));
+            
 
             while (true) {
                 String menu = servidor.getMenu();
-                out.writeObject(new MensajeString(servidor.getID(), usuario.getId(), menu));
+                out.writeObject(new MensajeMenu(servidor.getID(), c.getClientID(), menu));
 
                 mensaje = (Mensaje) in.readObject();
-                if (mensaje.getTipo() == 9) {
-                    int op = ((MensajeInt) mensaje).getContenido();
+                if (mensaje.getTipo() == 9) { // Obtenemos la opcion
+                    int op = ((MensajeOp) mensaje).getContenido();
 
                     if (op == 1) {
-                        List<ConexionCliente> clientes = servidor.getConexionesClientes();
+                        Map<Integer, ConexionCliente> clientes = servidor.getConexionesClientes();
                         int contador = 1;
                         String listaUsuarios = "Usuarios conectados:\n";
-                        for (ConexionCliente c : clientes) {
-                            Usuario u = c.getUsuario();
-                            listaUsuarios += contador++ + ". " + u.getNombreUsuario() + " | ID: " + u.getId() + "\n";
+                        for (Map.Entry<Integer, ConexionCliente> c1 : clientes.entrySet()) {
+                            Usuario u = c1.getValue().getUsuario();
+                            listaUsuarios += contador++ + ". " + u.getNombreUsuario() + " | ID: " + c1.getKey() + "\n";
                             listaUsuarios += "Información compartida:\n";
                             int contador2 = 1;
                             for (Informacion i : u.getInformacionCompartida()) {
                                 listaUsuarios += contador2++ + ". " + i.getNombre() + "\n";
                             }
                         }
-                        out.writeObject(new MensajeString(servidor.getID(), usuario.getId(), listaUsuarios));
+                        out.writeObject(new MensajeString(servidor.getID(), c.getClientID(), listaUsuarios));
                         // TODO: Recibir la confirmacion de la lista del OyenteServidor
 
                     } else if (op == 2) {
+                    	boolean found = false;
                         mensaje = (Mensaje) in.readObject();
                         String filename = ((MensajeString) mensaje).getContenido();
-                        List<ConexionCliente> clientes = servidor.getConexionesClientes();
-                        for (ConexionCliente c : clientes) {
-                            Usuario u = c.getUsuario();
-                            for (Informacion i : u.getInformacionCompartida()) {
+                        Map<Integer, ConexionCliente> clientes = servidor.getConexionesClientes();
+                        for (Map.Entry<Integer, ConexionCliente> c1 : clientes.entrySet()) {
+                            Usuario u = c1.getValue().getUsuario();
+                            for (Informacion i : u.getInformacionCompartida()) { // buscar el archivo solicitado
                                 if (i.getNombre().equals(filename)) {
-                                    
+                                    found = true;
                                 }
                             }
                         }

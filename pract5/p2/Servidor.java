@@ -3,22 +3,24 @@ package pract5.p2;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Semaphore;
 
 public class Servidor {
     private int id = 0;
     private volatile int counter = 0;
     private ServerSocket serverSocket;
-    private volatile List<Usuario> usuariosRegistrados;
-    private volatile List<ConexionCliente> conexionesClientes;
+    private volatile Map<Integer,Usuario> usuariosRegistrados; // Clave: ID_Usuario, Valor: Usuario
+    private volatile Map<Integer,ConexionCliente> conexionesClientes; // Clave: ID_Usuario, Valor: ConexionCliente
 
     private Semaphore mutex = new Semaphore(1);
 
     public Servidor(int puerto) throws IOException {
         serverSocket = new ServerSocket(puerto);
-        usuariosRegistrados = new java.util.ArrayList<>();
-        conexionesClientes = new java.util.ArrayList<>();
+        usuariosRegistrados = new HashMap<>();
+        conexionesClientes = new HashMap<>();
     }
 
     public void execute() throws IOException {
@@ -46,35 +48,39 @@ public class Servidor {
         return id_;
     }
 
-    public void registrarUsuario(Usuario usuario) throws InterruptedException {
+    public void registrarUsuario(int id, Usuario usuario) throws InterruptedException {
         mutex.acquire();
-        usuariosRegistrados.add(usuario);
+        usuariosRegistrados.put(id, usuario);
         mutex.release();
     }
 
-    public List<Usuario> getUsuariosRegistrados() {
+    public Map<Integer,Usuario> getUsuariosRegistrados() {
         return usuariosRegistrados;
     }
 
-    public void addConexion(ConexionCliente conexion) throws InterruptedException {
+    public void addConexion(int id, ConexionCliente conexion) throws InterruptedException {
         mutex.acquire();
-        conexionesClientes.add(conexion);
+        conexionesClientes.put(id, conexion);
         mutex.release();
     }
 
-    public void removeConexion(ConexionCliente conexion) throws InterruptedException {
+    public void removeConexion(int id, ConexionCliente conexion) throws InterruptedException {
         mutex.acquire();
-        conexionesClientes.remove(conexion);
+        conexionesClientes.remove(id);
         mutex.release();
     }
 
-    public List<ConexionCliente> getConexionesClientes() {
+    public Map<Integer,ConexionCliente> getConexionesClientes() {
         return conexionesClientes;
     }
 
     public String getMenu() {
         return "Operations:\n1. List available information \n2. Download files\n3. Exit\nChoose an option: ";
     }
+    
+    public boolean buscarCliente(int id) {
+		return usuariosRegistrados.containsKey(id);
+	}
 
     // Métodos para la gestión de usuarios y conexiones
     public static void main(String[] args) {
@@ -86,4 +92,9 @@ public class Servidor {
             e.printStackTrace();
         }
     }
+
+	public Usuario getUsuario(int clientID) {
+		return usuariosRegistrados.get(clientID);
+	}
+
 }

@@ -1,9 +1,12 @@
 package pract5.p2;
 
+import java.io.Serializable;
 import java.util.Scanner;
 
-public class Cliente {
-    private String nombre;
+public class Cliente implements Serializable{
+    
+	private static final long serialVersionUID = 1L;
+	private String nombre;
     private int ClientID;
     private int ServerID;
     private String host;
@@ -16,9 +19,20 @@ public class Cliente {
 
     public void execute() throws Exception {
         // Pide el nombre y manda sus datos
-        System.out.println("Introduce tu nombre de usuario: ");
-        Scanner scanner = new Scanner(System.in);
-        nombre = scanner.nextLine();
+    	
+    	Scanner scanner = new Scanner(System.in);
+    	
+        System.out.println("Introduce tu ID de usuario o 0 en caso de nuevo usuario: ");
+        ClientID = scanner.nextInt();
+        
+     // Limpiar el buffer del scanner
+        scanner.nextLine();
+        
+        if (ClientID == 0) {
+        	System.out.println("Introduce tu nombre de usuario: ");
+            nombre = scanner.nextLine();
+        }
+        
 
         Thread clientThread = new Thread(new OyenteServidor(this, host, port));
         clientThread.start();
@@ -44,6 +58,7 @@ public class Cliente {
     public String getNombre() {
         return nombre;
     }
+    
 
     // Métodos para interactuar con el servidor y otros clientes
     public static void main(String[] args) {
