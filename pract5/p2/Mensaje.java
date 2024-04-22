@@ -19,7 +19,7 @@ public abstract class Mensaje implements Serializable {
 	 * 6: Mensaje de confirmación de lista de usuarios
 	 * 7: Mensaje cerrar conexión
 	 * 8: Mensaje tipo String
-	 * 9: Mensaje tipo Int
+	 * 9: Mensaje Opcion
 	 * 10: Mensaje tipo Usuario
 	 * 11: Mensaje de menu
 	 * */

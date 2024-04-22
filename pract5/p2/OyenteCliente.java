@@ -48,8 +48,8 @@ public class OyenteCliente implements Runnable {
 //            	if (!find) {
 //            		
 //            	}
-            	usuario = servidor.getUsuario(c.getClientID());
-            	
+            	clientID = c.getClientID();
+            	usuario = servidor.getUsuario(clientID);            	
             }
             
             servidor.addConexion(clientID, new ConexionCliente(clientSocket, usuario));
@@ -57,9 +57,9 @@ public class OyenteCliente implements Runnable {
 
             while (true) {
                 String menu = servidor.getMenu();
-                out.writeObject(new MensajeMenu(servidor.getID(), c.getClientID(), menu));
+                out.writeObject(new MensajeMenu(servidor.getID(), clientID, menu));
 
-                mensaje = (Mensaje) in.readObject(); // Obtenemos la opcion
+                mensaje = (Mensaje) in.readObject(); // 1.2 Obtenemos la opcion
                 if (mensaje.getTipo() == 9) { 
                     int op = ((MensajeOp) mensaje).getContenido();
 
@@ -76,9 +76,9 @@ public class OyenteCliente implements Runnable {
                                 listaUsuarios += contador2++ + ". " + i.getNombre() + "\n";
                             }
                         }
-                        out.writeObject(new MensajeString(servidor.getID(), c.getClientID(), listaUsuarios)); // 3. Manda la lista
+                        out.writeObject(new MensajeString(servidor.getID(), clientID, listaUsuarios)); // 2.1 Manda la lista
                         // Recibir la confirmacion de la lista del OyenteServidor
-                        Mensaje mConfListaUsuarios = (Mensaje) in.readObject(); // 5. recibimos la confirmacion
+                        Mensaje mConfListaUsuarios = (Mensaje) in.readObject(); // 3.2 recibimos la confirmacion
                         // Imprimir por consola la confirmación
                         System.out.println(((MensajeString) mConfListaUsuarios).getContenido());
 

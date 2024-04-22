@@ -51,11 +51,11 @@ public class OyenteServidor implements Runnable {
 				System.out.println(((MensajeMenu) mensaje).getContenido()); 
 				int op = scanner.nextInt();
 				
-				// 1. El cliente pide una opcion
+				// 1.1 El cliente pide una opcion
 				out.writeObject(new MensajeOp(ClientID, ServerID, op));
 
 				if (op == 1) {
-					// Recibe la lista de usuarios registrados
+					// 2.2 Recibe la lista de usuarios registrados
 					mensaje = (Mensaje) in.readObject();
 					if (mensaje.getTipo() == 8) { // TODO: No debería ser el mensajeListaUsuarios ??
 						System.out.println(((MensajeString) mensaje).getContenido());
@@ -63,7 +63,7 @@ public class OyenteServidor implements Runnable {
 						System.out.println("Error al recibir la lista de usuarios");
 					}
 
-					// 4. Confirmar la recepción de la lista de usuarios registrados
+					// 3.1 Confirmar la recepción de la lista de usuarios registrados
 					out.writeObject(new MensajeString(cliente.getClientID(), cliente.getServerID(), "Confirmación de recepción de la lista de usuarios registrados"));
 
 				}
