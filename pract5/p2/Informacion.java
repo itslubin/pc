@@ -2,10 +2,7 @@ package pract5.p2;
 
 import java.io.Serializable;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Paths;
-
-import javax.sound.midi.MidiDevice.Info;
 
 public class Informacion implements Serializable {
     private static final long serialVersionUID = 1L;

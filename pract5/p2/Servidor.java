@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
 
@@ -12,8 +11,8 @@ public class Servidor {
     private int id = 0;
     private volatile int counter = 0;
     private ServerSocket serverSocket;
-    private volatile Map<Integer,Usuario> usuariosRegistrados; // Clave: ID_Usuario, Valor: Usuario
-    private volatile Map<Integer,ConexionCliente> conexionesClientes; // Clave: ID_Usuario, Valor: ConexionCliente
+    private volatile Map<Integer, Usuario> usuariosRegistrados; // Clave: ID_Usuario, Valor: Usuario
+    private volatile Map<Integer, ConexionCliente> conexionesClientes; // Clave: ID_Usuario, Valor: ConexionCliente
 
     private Semaphore mutex = new Semaphore(1);
 
@@ -54,7 +53,7 @@ public class Servidor {
         mutex.release();
     }
 
-    public Map<Integer,Usuario> getUsuariosRegistrados() {
+    public Map<Integer, Usuario> getUsuariosRegistrados() {
         usuariosRegistrados = new HashMap<>(this.usuariosRegistrados);
         return usuariosRegistrados;
     }
@@ -71,7 +70,7 @@ public class Servidor {
         mutex.release();
     }
 
-    public Map<Integer,ConexionCliente> getConexionesClientes() {
+    public Map<Integer, ConexionCliente> getConexionesClientes() {
         conexionesClientes = new HashMap<>(this.conexionesClientes);
         return conexionesClientes;
     }
@@ -79,10 +78,10 @@ public class Servidor {
     public String getMenu() {
         return "Operations:\n1. List available information \n2. Download files\n3. Exit\nChoose an option: ";
     }
-    
+
     public boolean buscarCliente(int id) {
-		return usuariosRegistrados.containsKey(id);
-	}
+        return usuariosRegistrados.containsKey(id);
+    }
 
     // Métodos para la gestión de usuarios y conexiones
     public static void main(String[] args) {
@@ -95,12 +94,12 @@ public class Servidor {
         }
     }
 
-	public Usuario getUsuario(int clientID) {
-		return usuariosRegistrados.get(clientID);
-	}
+    public Usuario getUsuario(int clientID) {
+        return usuariosRegistrados.get(clientID);
+    }
 
-	public boolean hayClientesConectados() {
-		return !conexionesClientes.isEmpty();
-	}
+    public boolean hayClientesConectados() {
+        return !conexionesClientes.isEmpty();
+    }
 
 }

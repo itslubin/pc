@@ -1,9 +1,7 @@
 package pract5.p2.mensaje;
-
 import pract5.p2.Cliente;
 
 public class MensajeCliente extends Mensaje {
-
 	private Cliente c;
 
 	public MensajeCliente(int id_from, int id_to, Cliente cliente) {
@@ -17,7 +15,6 @@ public class MensajeCliente extends Mensaje {
 
 	@Override
 	public int getTipo() {
-		// TODO Auto-generated method stub
 		return 10;
 	}
 
