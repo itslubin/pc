@@ -4,12 +4,13 @@ import java.io.Serializable;
 
 // Clase padre de la que heredan todos los tipos de mensajes
 public abstract class Mensaje implements Serializable {
-	
+
 	int id_from;
 	int id_to;
 	int tipo;
-	
-	/* Tipos de mensajes:
+
+	/*
+	 * Tipos de mensajes:
 	 * 0: Mensaje de conexion
 	 * 1: Mensaje de lista de usuarios
 	 * 2: Mensaje emitir fichero
@@ -22,15 +23,14 @@ public abstract class Mensaje implements Serializable {
 	 * 9: Mensaje Opcion
 	 * 10: Mensaje tipo Usuario
 	 * 11: Mensaje de menu
-	 * */
+	 */
 
-	Mensaje(int id_from, int id_to, int tipo) {
+	Mensaje(int id_from, int id_to) {
 		this.id_from = id_from;
 		this.id_to = id_to;
-		this.tipo = tipo;
 	}
-	
-    public abstract int getTipo();
+
+	public abstract int getTipo();
 
 	public int getIdFrom() {
 		return id_from;

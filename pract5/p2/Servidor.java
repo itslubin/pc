@@ -55,6 +55,7 @@ public class Servidor {
     }
 
     public Map<Integer,Usuario> getUsuariosRegistrados() {
+        usuariosRegistrados = new HashMap<>(this.usuariosRegistrados);
         return usuariosRegistrados;
     }
 
@@ -71,6 +72,7 @@ public class Servidor {
     }
 
     public Map<Integer,ConexionCliente> getConexionesClientes() {
+        conexionesClientes = new HashMap<>(this.conexionesClientes);
         return conexionesClientes;
     }
 

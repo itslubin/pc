@@ -4,7 +4,7 @@ public class MensajeString extends Mensaje {
 	private String contenido;
 
     public MensajeString(int id_from, int id_to, String contenido) {
-        super(id_from, id_to, 0);
+        super(id_from, id_to);
         this.contenido = contenido;
     }
 

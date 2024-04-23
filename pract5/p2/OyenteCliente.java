@@ -30,40 +30,38 @@ public class OyenteCliente implements Runnable {
 
             Mensaje mensaje;
             int clientID = servidor.getNewId();
-            
+
             // 1.2 Obtener el nombre del cliente
             mensaje = (Mensaje) in.readObject();
-            
+
             Cliente c = ((MensajeCliente) mensaje).getCliente();
-            
+
             if (c.getClientID() == 0) { // Es un nuevo cliente
-            	usuario = new Usuario(c.getNombre(),
+                usuario = new Usuario(c.getNombre(),
                         clientSocket.getInetAddress().getHostAddress());
-                        
+
                 // Añadir el cliente a la tabla
                 servidor.registrarUsuario(clientID, usuario);
-                
+
             }
-            
+
             else { // Es un usuario existente
-//            	boolean find = servidor.buscarCliente(c.getClientID());
-//            	if (!find) {
-//            		
-//            	}
-            	clientID = c.getClientID();
-            	usuario = servidor.getUsuario(clientID);            	
+                // boolean find = servidor.buscarCliente(c.getClientID());
+                // if (!find) {
+                //
+                // }
+                clientID = c.getClientID();
+                usuario = servidor.getUsuario(clientID);
             }
-            
+
             servidor.addConexion(clientID, new ConexionCliente(clientSocket, usuario));
-            
-            
+
             String menu = servidor.getMenu();
-            out.writeObject(new MensajeMenu(servidor.getID(), clientID, menu)); //2.1 Mandamos menu
+            out.writeObject(new MensajeMenu(servidor.getID(), clientID, menu)); // 2.1 Mandamos menu
 
             while (true) {
-
                 mensaje = (Mensaje) in.readObject(); // 1.2 Obtenemos la opcion
-                if (mensaje.getTipo() == 9) { 
+                if (mensaje.getTipo() == 9) {
                     int op = ((MensajeOp) mensaje).getContenido();
 
                     if (op == 1) { // El cliente quiere la lista
@@ -79,16 +77,17 @@ public class OyenteCliente implements Runnable {
                                 listaUsuarios += contador2++ + ". " + i.getNombre() + "\n";
                             }
                         }
-                        out.writeObject(new MensajeString(servidor.getID(), clientID, listaUsuarios)); // 2.1 Manda la lista
-                        
+                        out.writeObject(new MensajeString(servidor.getID(), clientID, listaUsuarios)); // 2.1 Manda la
+                                                                                                       // lista
+
                         // Recibir la confirmacion de la lista del OyenteServidor
                         Mensaje mConfListaUsuarios = (Mensaje) in.readObject(); // 3.2 recibimos la confirmacion
-                        
+
                         // Imprimir por consola la confirmación
                         System.out.println(((MensajeString) mConfListaUsuarios).getContenido());
 
                     } else if (op == 2) { // El cliente quiere descargar un fichero
-                    	boolean found = false;
+                        boolean found = false;
                         mensaje = (Mensaje) in.readObject(); // 2.2 Recibimos el nombre del fichero
                         String filename = ((MensajeString) mensaje).getContenido();
                         Map<Integer, ConexionCliente> clientes = servidor.getConexionesClientes();
@@ -97,26 +96,26 @@ public class OyenteCliente implements Runnable {
                             for (Informacion i : u.getInformacionCompartida()) { // buscar el archivo solicitado
                                 if (i.getNombre().equals(filename)) {
                                     found = true;
-                                    
+
                                 }
                             }
                         }
-                        
+
                         // 3.1 Mensaje emitir fichero al cliente emisor
                         // 4.2 Recibir Mensaje Preparado CS
-                        
-                        //5.1 Mensaje Preparado SC al cliente receptor
-                        
+
+                        // 5.1 Mensaje Preparado SC al cliente receptor
+
                     } else if (op == 3) { // TODO
-                    	// 2.2 Recibimos el mensaje de cierre de conexion
+                        // 2.2 Recibimos el mensaje de cierre de conexion
                         // Quitamos al Cliente del servidor
-                    	servidor.removeConexion(clientID);
-                    	
-                    	// 3.1 Confirmacion ??
-                    	if (!servidor.hayClientesConectados()) {
-                    		break;
-                    	}
-                    	
+                        servidor.removeConexion(clientID);
+
+                        // 3.1 Confirmacion ??
+                        if (!servidor.hayClientesConectados()) {
+                            break;
+                        }
+
                     }
 
                 }

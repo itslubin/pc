@@ -1,9 +1,9 @@
 package pract5.p2.mensaje;
 
-public class MensajeCerrarConexion extends Mensaje{
-    MensajeCerrarConexion(int id_from, int id_to, int tipo) {
-        super(id_from, id_to, tipo);
-        //TODO Auto-generated constructor stub
+public class MensajeCerrarConexion extends MensajeString {
+    MensajeCerrarConexion(int id_from, int id_to, String contenido) {
+        super(id_from, id_to, contenido);
+        
     }
 
     @Override

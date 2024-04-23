@@ -1,9 +1,9 @@
 package pract5.p2.mensaje;
 
-public class MensajePreparadoSC extends Mensaje {
+public class MensajePreparadoSC extends MensajeString {
 
-    MensajePreparadoSC(int id_from, int id_to, int tipo) {
-        super(id_from, id_to, tipo);
+    MensajePreparadoSC(int id_from, int id_to, String contenido) {
+        super(id_from, id_to, contenido);
         //TODO Auto-generated constructor stub
     }
 
