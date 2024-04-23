@@ -19,9 +19,5 @@ public class ConexionCliente {
     public Usuario getUsuario() {
         return usuario;
     }
-
-    /* public void sendFile(String filename, ) {
-
-    } */
     
 }

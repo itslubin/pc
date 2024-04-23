@@ -6,6 +6,9 @@ import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class Servidor {
     private int id = 0;
@@ -13,13 +16,22 @@ public class Servidor {
     private ServerSocket serverSocket;
     private volatile Map<Integer, Usuario> usuariosRegistrados; // Clave: ID_Usuario, Valor: Usuario
     private volatile Map<Integer, ConexionCliente> conexionesClientes; // Clave: ID_Usuario, Valor: ConexionCliente
-
-    private Semaphore mutex = new Semaphore(1);
+    
+    // Variables Lectores-escritores
+    int nr = 0;
+    int nw = 0;
+    int dw = 0;
+    private Lock lock;
+    private Condition oktoread;
+    private Condition oktowrite;
 
     public Servidor(int puerto) throws IOException {
         serverSocket = new ServerSocket(puerto);
         usuariosRegistrados = new HashMap<>();
         conexionesClientes = new HashMap<>();
+        lock = new ReentrantLock();
+        oktoread = lock.newCondition();
+        oktowrite = lock.newCondition();
     }
 
     public void execute() throws IOException {
@@ -36,53 +48,125 @@ public class Servidor {
         }
     }
 
-    public int getID() {
-        return id;
+    public int getID() { // Read
+    	request_read();
+    	int _id = id;
+    	release_read();
+        return _id;
+    }
+    
+    public int getNewId() throws InterruptedException { // Write
+    	request_write();
+    	int c = ++counter;
+    	release_write();
+        return c;
     }
 
-    public int getNewId() throws InterruptedException {
-        mutex.acquire();
-        int id_ = ++counter;
-        mutex.release();
-        return id_;
-    }
-
-    public void registrarUsuario(int id, Usuario usuario) throws InterruptedException {
-        mutex.acquire();
+    public void registrarUsuario(int id, Usuario usuario) throws InterruptedException { // Write
+    	request_write();
         usuariosRegistrados.put(id, usuario);
-        mutex.release();
+        release_write();
     }
 
-    public Map<Integer, Usuario> getUsuariosRegistrados() {
-        usuariosRegistrados = new HashMap<>(this.usuariosRegistrados);
-        return usuariosRegistrados;
+    public Map<Integer, Usuario> getUsuariosRegistrados() { // Read
+    	request_read();
+    	Map<Integer, Usuario> aux = new HashMap<>(usuariosRegistrados);
+    	release_read();
+        return aux;
     }
 
-    public void addConexion(int id, ConexionCliente conexion) throws InterruptedException {
-        mutex.acquire();
+    public void addConexion(int id, ConexionCliente conexion) throws InterruptedException { // Write
+    	request_write();
         conexionesClientes.put(id, conexion);
-        mutex.release();
+        release_write();
     }
 
-    public void removeConexion(int id) throws InterruptedException {
-        mutex.acquire();
+    public void removeConexion(int id) throws InterruptedException { // Write
+    	request_write();
         conexionesClientes.remove(id);
-        mutex.release();
+        release_write();
     }
 
-    public Map<Integer, ConexionCliente> getConexionesClientes() {
-        conexionesClientes = new HashMap<>(this.conexionesClientes);
-        return conexionesClientes;
+    public Map<Integer, ConexionCliente> getConexionesClientes() { // Read
+    	request_read();
+    	Map<Integer, ConexionCliente> aux = new HashMap<>(conexionesClientes);
+    	release_read();
+        return aux;
     }
 
+    public boolean buscarCliente(int id) { // Read
+    	boolean c;
+    	request_read();
+    	c = usuariosRegistrados.containsKey(id);
+    	release_read();
+        return c;
+    }
+    
+    public ConexionCliente getConexionCliente(int id) { // Read
+    	request_read();
+    	ConexionCliente cc = conexionesClientes.get(id);
+    	release_read();
+    	return cc;
+    }
+
+    public Usuario getUsuario(int clientID) { // Read
+    	request_read();
+    	Usuario u = usuariosRegistrados.get(clientID);
+    	release_read();
+        return u;
+    }
+
+    public boolean hayClientesConectados() { // Read
+    	request_read();
+    	boolean b = !conexionesClientes.isEmpty();
+    	release_read();
+        return b;
+    }
+    
     public String getMenu() {
         return "Operations:\n1. List available information \n2. Download files\n3. Exit\nChoose an option: ";
     }
-
-    public boolean buscarCliente(int id) {
-        return usuariosRegistrados.containsKey(id);
+    
+    public void request_read() {
+        while (nw > 0) {
+            try {
+                oktoread.await();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        nr++;
     }
 
+    public void release_read() {
+        nr--;
+        if (nr==0) oktowrite.signal();
+        
+    }
+
+    public void request_write() {
+        while (nr > 0 || nw > 0) {
+            try {
+            	dw++;
+                oktowrite.await();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        nw++;
+    }
+
+    public void release_write() {
+        nw--;
+        if (dw > 0) {
+        	dw--;
+        	oktowrite.signal();
+        }
+        else {
+        	oktoread.signal();
+        }
+    }
+    
     // Métodos para la gestión de usuarios y conexiones
     public static void main(String[] args) {
         try {
@@ -92,14 +176,6 @@ public class Servidor {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    public Usuario getUsuario(int clientID) {
-        return usuariosRegistrados.get(clientID);
-    }
-
-    public boolean hayClientesConectados() {
-        return !conexionesClientes.isEmpty();
     }
 
 }

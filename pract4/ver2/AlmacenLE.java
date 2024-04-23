@@ -63,12 +63,15 @@ public class AlmacenLE {
     }
 
     public void escribir(Producto producto, int pos) {
+    	request_write();
         this.buf[pos] = producto;
+        release_write();
     }
 
     public Producto leer(int pos) {
+    	request_read();
         Producto prod = buf[pos];
-
+        release_read();
         return prod;
     }
 }
