@@ -5,6 +5,8 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.Scanner;
 
+import pract5.p2.mensaje.*;
+
 public class OyenteServidor implements Runnable {
 	// Constructor y método run para la escucha del servidor
 	Cliente cliente;
@@ -35,9 +37,6 @@ public class OyenteServidor implements Runnable {
 
 			// Envía el nombre del archivo que se desea obtener
 			
-			// TODO: clientID y serverID como mandamos los datos ya inicializados si el
-			// servidor no sabe quienes somos??
-			
 			// 1.1 Mandar datos cliente
 			out.writeObject(new MensajeCliente(0, 0, cliente));
 			
@@ -63,14 +62,14 @@ public class OyenteServidor implements Runnable {
 					if (op == 1) {
 						// 2.2 Recibe la lista de usuarios registrados
 						mensaje = (Mensaje) in.readObject();
-						if (mensaje.getTipo() == 8) { // TODO: No debería ser el mensajeListaUsuarios ??
-							System.out.println(((MensajeString) mensaje).getContenido());
+						if (mensaje.getTipo() == 1) { 
+							System.out.println(((MensajeListaUsuario) mensaje).getContenido());
 						} else {
 							System.out.println("Error al recibir la lista de usuarios");
 						}
 
 						// 3.1 Confirmar la recepción de la lista de usuarios registrados
-						out.writeObject(new MensajeString(cliente.getClientID(), cliente.getServerID(), "Confirmación de recepción de la lista de usuarios registrados"));
+						out.writeObject(new MensajeConf(cliente.getClientID(), cliente.getServerID(), String.valueOf(cliente.getClientID()) + " ha confirmado la recepción de la lista de usuarios registrados"));
 
 					}
 					

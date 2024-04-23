@@ -1,4 +1,4 @@
-package pract5.p2;
+package pract5.p2.mensaje;
 
 import java.io.Serializable;
 
@@ -18,7 +18,7 @@ public abstract class Mensaje implements Serializable {
 	 * 5: Mensaje de confirmación conexión
 	 * 6: Mensaje de confirmación de lista de usuarios
 	 * 7: Mensaje cerrar conexión
-	 * 8: Mensaje tipo String
+	 * 8: Mensaje de confirmación
 	 * 9: Mensaje Opcion
 	 * 10: Mensaje tipo Usuario
 	 * 11: Mensaje de menu

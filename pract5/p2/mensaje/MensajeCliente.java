@@ -1,4 +1,6 @@
-package pract5.p2;
+package pract5.p2.mensaje;
+
+import pract5.p2.Cliente;
 
 public class MensajeCliente extends Mensaje {
 	

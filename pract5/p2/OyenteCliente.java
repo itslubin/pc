@@ -6,6 +6,8 @@ import java.net.Socket;
 import java.util.List;
 import java.util.Map;
 
+import pract5.p2.mensaje.*;
+
 public class OyenteCliente implements Runnable {
     // Constructor y método run para la escucha del cliente
 
@@ -78,8 +80,10 @@ public class OyenteCliente implements Runnable {
                             }
                         }
                         out.writeObject(new MensajeString(servidor.getID(), clientID, listaUsuarios)); // 2.1 Manda la lista
+                        
                         // Recibir la confirmacion de la lista del OyenteServidor
                         Mensaje mConfListaUsuarios = (Mensaje) in.readObject(); // 3.2 recibimos la confirmacion
+                        
                         // Imprimir por consola la confirmación
                         System.out.println(((MensajeString) mConfListaUsuarios).getContenido());
 

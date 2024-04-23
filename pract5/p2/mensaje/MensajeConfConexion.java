@@ -1,8 +1,8 @@
-package pract5.p2;
+package pract5.p2.mensaje;
 
-public class MensajePreparadoSC extends Mensaje {
+public class MensajeConfConexion extends Mensaje {
 
-    MensajePreparadoSC(int id_from, int id_to, int tipo) {
+    MensajeConfConexion(int id_from, int id_to, int tipo) {
         super(id_from, id_to, tipo);
         //TODO Auto-generated constructor stub
     }
@@ -10,7 +10,7 @@ public class MensajePreparadoSC extends Mensaje {
     @Override
     public int getTipo() {
         // TODO Auto-generated method stub
-        return 4;
+        return 5;
     }
-    
+
 }

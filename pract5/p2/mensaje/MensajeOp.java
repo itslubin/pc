@@ -1,4 +1,4 @@
-package pract5.p2;
+package pract5.p2.mensaje;
 
 public class MensajeOp extends Mensaje {
 	private int contenido;
