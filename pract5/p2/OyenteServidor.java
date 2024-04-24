@@ -25,7 +25,7 @@ public class OyenteServidor implements Runnable {
 	@Override
 	public void run() {
 		try {
-			Mensaje mensaje;
+			Mensaje m;
 			Scanner scanner = new Scanner(System.in);
 
 			// Conecta al servidor en el puerto 1234 en localhost
@@ -39,27 +39,28 @@ public class OyenteServidor implements Runnable {
 
 			// 1.1 Mandar datos cliente
 			out.writeObject(new MensajeCliente(0, 0, cliente));
-			
-			mensaje = (Mensaje) in.readObject(); // 2.2 Recibimos el menu
-			ClientID = mensaje.getIdTo();
-			ServerID = mensaje.getIdFrom();
+
+			m = (Mensaje) in.readObject(); // 2.2 Recibimos el menu
+			ClientID = m.getIdTo();
+			ServerID = m.getIdFrom();
 			cliente.setClientID(ClientID);
 			cliente.setServerID(ServerID);
-			
-			String menu = ((MensajeMenu) mensaje).getContenido();
+
+			String menu = ((MensajeMenu) m).getContenido();
 
 			while (true) {
-				
+				Mensaje mensaje = m; // inicializar a MensajeMenu
+
 				// Imprimimos el menu por pantalla
 				System.out.print(menu);
 				int op = scanner.nextInt();
 				// Limpiar buffer
 				scanner.nextLine();
-				
+
 				if (in.available() > 0) { // Si recibimos peticion de enviar fichero
-		            mensaje = (Mensaje) in.readObject();
+					mensaje = (Mensaje) in.readObject();
 				}
-				
+
 				if (mensaje.getTipo() == 2) { // Recibimos emitir fichero
 					// 3.2 Recibir Mensaje emitir fichero
 					System.out.println(((MensajeEmitirFichero) mensaje).getContenido());
@@ -70,60 +71,63 @@ public class OyenteServidor implements Runnable {
 
 					// Thread emisor = new Thread(new Emisor(1235, "localhost"));
 					// emisor.start();
-				} else {
-					System.out.println("Error al recibir el mensaje emitir fichero");
-				}
-				
-				if (op == 1) {
-					// 1.1 El cliente elige la opción de listar usuarios
-					out.writeObject(new MensajeListaUsuario(ClientID, ServerID, "Listar usuarios"));
+				} /*
+					 * else {
+					 * System.out.println("Error al recibir el mensaje emitir fichero");
+					 * }
+					 */
+				else {
+					if (op == 1) {
+						// 1.1 El cliente elige la opción de listar usuarios
+						out.writeObject(new MensajeListaUsuario(ClientID, ServerID, "Listar usuarios"));
 
-					// 2.2 Recibe la lista de usuarios registrados
-					mensaje = (Mensaje) in.readObject();
-					if (mensaje.getTipo() == 8) {
-						System.out.println(((MensajeString) mensaje).getContenido());
-					} else {
-						System.out.println("Error al recibir la lista de usuarios");
+						// 2.2 Recibe la lista de usuarios registrados
+						mensaje = (Mensaje) in.readObject();
+						if (mensaje.getTipo() == 8) {
+							System.out.println(((MensajeString) mensaje).getContenido());
+						} else {
+							System.out.println("Error al recibir la lista de usuarios");
+						}
+
+						// 3.1 Confirmar la recepción de la lista de usuarios registrados
+						out.writeObject(new MensajeConfListaUsuario(ClientID, ServerID,
+								String.valueOf(ClientID)
+										+ " ha confirmado la recepción de la lista de usuarios registrados"));
+
 					}
 
-					// 3.1 Confirmar la recepción de la lista de usuarios registrados
-					out.writeObject(new MensajeConfListaUsuario(ClientID, ServerID,
-							String.valueOf(ClientID)
-									+ " ha confirmado la recepción de la lista de usuarios registrados"));
+					else if (op == 2) { // TODO
+						// 1.1 El cliente elige la opción de descargar fichero
+						out.writeObject(new MensajePedirFichero(ClientID, ServerID, "Pedir fichero"));
 
-				}
+						System.out.println("Introduzca el fichero que quiere descargar: ");
+						String file_name = scanner.nextLine();
 
-				else if (op == 2) { // TODO
-					// 1.1 El cliente elige la opción de descargar fichero
-					out.writeObject(new MensajePedirFichero(ClientID, ServerID, "Pedir fichero"));
+						// 2.1 Enviar el nombre del fichero
+						out.writeObject(new MensajeString(ClientID, ServerID, file_name));
 
-					System.out.println("Introduzca el fichero que quiere descargar: ");
-					String file_name = scanner.nextLine();
+						// 5.2 Recibido Mensaje Preparado SC
+						mensaje = (Mensaje) in.readObject();
+						if (mensaje.getTipo() == 4) {
+							System.out.println(((MensajePreparadoSC) mensaje).getContenido());
 
-					// 2.1 Enviar el nombre del fichero
-					out.writeObject(new MensajeString(ClientID, ServerID, file_name));
+							// Thread receptor = new Thread(new Receptor("localhost", 1235));
+							// receptor.start();
+						} else {
+							System.out.println(((MensajeError) mensaje).getContenido());
+						}
+					}
 
-					// 5.2 Recibido Mensaje Preparado SC
-					mensaje = (Mensaje) in.readObject();
-					if (mensaje.getTipo() == 4) {
-						System.out.println(((MensajePreparadoSC) mensaje).getContenido());
+					else if (op == 3) { // TODO
+						// 1.1 El cliente elige la opción de cerrar conexión
+						out.writeObject(new MensajeCerrarConexion(ClientID, ServerID, String.valueOf(ClientID)
+								+ " ha cerrado la conexión"));
+						System.out.println("Conexión cerrada");
 
-						// Thread receptor = new Thread(new Receptor("localhost", 1235));
-						// receptor.start();
-					} else {
-						System.out.println(((MensajeError) mensaje).getContenido());
+						break;
 					}
 				}
 
-				else if (op == 3) { // TODO
-					// 1.1 El cliente elige la opción de cerrar conexión
-					out.writeObject(new MensajeCerrarConexion(ClientID, ServerID, String.valueOf(ClientID)
-							+ " ha cerrado la conexión"));
-					System.out.println("Conexión cerrada");
-
-					break;
-				}
-				
 			}
 
 			// Cierra el scanner y la conexión

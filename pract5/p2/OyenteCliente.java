@@ -61,12 +61,11 @@ public class OyenteCliente implements Runnable {
             servidor.addConexion(clientID, new ConexionCliente(clientSocket, usuario));
 
             String menu = servidor.getMenu();
-            
+
+            // 2.1 Mandamos menu
+            out.writeObject(new MensajeMenu(servidor.getID(), clientID, menu));
 
             while (true) {
-            	
-            	// 2.1 Mandamos menu
-                out.writeObject(new MensajeMenu(servidor.getID(), clientID, menu));
 
                 // 1.2 Obtenemos el mensaje del usuario (opcion)
                 mensaje = (Mensaje) in.readObject();
