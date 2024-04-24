@@ -4,6 +4,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import pract5.p2.mensaje.*;
 
@@ -28,7 +30,7 @@ public class OyenteCliente implements Runnable {
             ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
 
             Mensaje mensaje;
-            
+
             int clientID = servidor.getNewId();
 
             // 1.2 Obtener el nombre del cliente
@@ -43,6 +45,8 @@ public class OyenteCliente implements Runnable {
                 // Añadir el cliente a la tabla
                 servidor.registrarUsuario(clientID, usuario);
 
+                Lock lock = new ReentrantLock();
+                servidor.registarLock(clientID, lock);
             }
 
             else { // Es un usuario existente
@@ -59,20 +63,27 @@ public class OyenteCliente implements Runnable {
             String menu = servidor.getMenu();
 
             while (true) {
+
                 // 2.1 Mandamos menu
                 out.writeObject(new MensajeMenu(servidor.getID(), clientID, menu));
+
+                // Cojemos el lock del cliente
+                servidor.lock(clientID);
 
                 // 1.2 Obtenemos el mensaje del usuario (opcion)
                 mensaje = (Mensaje) in.readObject();
 
                 // El cliente quiere la lista
                 if (mensaje.getTipo() == 1) {
+
                     Map<Integer, ConexionCliente> clientes = servidor.getConexionesClientes();
                     int contador = 1;
-                    String listaUsuarios = "Usuarios conectados:\n";
+                    String listaUsuarios = "\nUsuarios conectados:\n";
                     for (Map.Entry<Integer, ConexionCliente> c1 : clientes.entrySet()) {
                         Usuario u = c1.getValue().getUsuario();
-                        listaUsuarios += contador++ + ". " + u.getNombreUsuario() + " | ID: " + c1.getKey() + "\n";
+                        listaUsuarios += "\n" + contador++ + ". Nombre: " + u.getNombreUsuario() + " | ID: "
+                                + c1.getKey()
+                                + "\n";
                         listaUsuarios += "Información compartida:\n";
                         int contador2 = 1;
                         for (Informacion i : u.getInformacionCompartida()) {
@@ -107,33 +118,43 @@ public class OyenteCliente implements Runnable {
                         }
                     }
 
-                    // 3.1 Mensaje emitir fichero al cliente emisor
                     if (emitorID != -1) {
-                    	// Llamar al Cliente emisor
-                    	ConexionCliente cc = servidor.getConexionCliente(emitorID);
-                    	Socket s = cc.getSocket();
-                    	
-                    	outE = new ObjectOutputStream(s.getOutputStream());
-                        inE = new ObjectInputStream(s.getInputStream());
-                    	
-                        outE.writeObject(
-                                new MensajeEmitirFichero(servidor.getID(), emitorID, "Emitir fichero", filename));
-                    } else {
-                        // out.writeObject(new MensajeString(servidor.getID(), clientID, "Fichero no encontrado"));
-                    	System.out.println("Fichero no encontrado");
-                    	continue;
-                    }
-                    // 4.2 Recibir Mensaje Preparado CS
-                    mensaje = (Mensaje) inE.readObject();
-                    if (mensaje.getTipo() == 3) {
-                        System.out.println(((MensajePreparadoCS) mensaje).getContenido());
-                    } else { // TODO: innecesario, ya que solo va a poder recibir la confirmacion si previamente ya ha encontrado el fichero
-                        System.out.println("Error al recibir el fichero");
-                    } 
 
-                    // 5.1 Mensaje Preparado SC al cliente receptor
-                    out.writeObject(
-                            new MensajePreparadoSC(servidor.getID(), clientID, "Preparado para recibir fichero"));
+                        // Llamamos al lock del cliente emisor
+                        servidor.lock(emitorID);
+
+                        // Llamar al Cliente emisor
+                        ConexionCliente cc = servidor.getConexionCliente(emitorID);
+                        Socket s = cc.getSocket();
+
+                        outE = new ObjectOutputStream(s.getOutputStream());
+                        inE = new ObjectInputStream(s.getInputStream());
+
+                        // 3.1 Mensaje emitir fichero al cliente emisor
+                        outE.writeObject(
+                                new MensajeEmitirFichero(servidor.getID(), emitorID, "Emito fichero", filename));
+
+                        // 4.2 Recibir Mensaje Preparado CS
+                        mensaje = (Mensaje) inE.readObject();
+                        if (mensaje.getTipo() == 3) {
+                            System.out.println(((MensajePreparadoCS) mensaje).getContenido());
+                            // 5.1 Mensaje Preparado SC al cliente receptor
+                            out.writeObject(
+                                    new MensajePreparadoSC(servidor.getID(), clientID,
+                                            "Preparado para recibir fichero"));
+                        }
+
+                        // Liberamos el lock
+                        servidor.unlock(emitorID);
+
+                    } else {
+                        out.writeObject(new MensajeError(servidor.getID(), clientID,
+                                "Error al recibir el mensaje preparado SC, el fichero "
+                                        + filename + " no se ha encontrado"));
+                        System.out.println(
+                                "Fichero " + filename + " solicitado por el cliente " + clientID + " no encontrado");
+                        continue;
+                    }
 
                 } else if (mensaje.getTipo() == 7) { // TODO
                     System.out.println(((MensajeCerrarConexion) mensaje).getContenido());
@@ -143,6 +164,7 @@ public class OyenteCliente implements Runnable {
                     break;
                 }
 
+                servidor.unlock(clientID);
             }
 
             // Cierra la conexión

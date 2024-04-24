@@ -5,7 +5,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -25,10 +24,14 @@ public class Servidor {
     private Condition oktoread;
     private Condition oktowrite;
 
+    // Sincronización comunicación OC
+    private volatile Map<Integer, Lock> lockClientes; // Clave: ID_Usuario, Valor: Lock
+
     public Servidor(int puerto) throws IOException {
         serverSocket = new ServerSocket(puerto);
         usuariosRegistrados = new HashMap<>();
         conexionesClientes = new HashMap<>();
+        lockClientes = new HashMap<>();
         lock = new ReentrantLock();
         oktoread = lock.newCondition();
         oktowrite = lock.newCondition();
@@ -49,10 +52,7 @@ public class Servidor {
     }
 
     public int getID() { // Read
-    	request_read();
-    	int _id = id;
-    	release_read();
-        return _id;
+        return id;
     }
     
     public int getNewId() throws InterruptedException { // Write
@@ -62,9 +62,31 @@ public class Servidor {
         return c;
     }
 
-    public void registrarUsuario(int id, Usuario usuario) throws InterruptedException { // Write
+    public void lock(int id) { // write
+        request_write();
+        lockClientes.get(id).lock();
+        release_write();
+    }
+
+    public void unlock(int id) { // write
+        request_write();
+        lockClientes.get(id).unlock();
+        release_write();
+    }
+
+    public void registarLock(int id, Lock lock) {
+        request_write();
+        lockClientes.put(id, lock);
+        release_write();
+    }
+
+    public void registrarUsuario(int id, Usuario usuario) throws InterruptedException, IOException { // Write
     	request_write();
         usuariosRegistrados.put(id, usuario);
+        // debug
+        usuario.addInformacionCompartida(new Informacion("Amélie"));
+        usuario.addInformacionCompartida(new Informacion("Godfather"));
+        usuario.addInformacionCompartida(new Informacion("Titanic"));
         release_write();
     }
 
@@ -115,19 +137,13 @@ public class Servidor {
     	release_read();
         return u;
     }
-
-    public boolean hayClientesConectados() { // Read
-    	request_read();
-    	boolean b = !conexionesClientes.isEmpty();
-    	release_read();
-        return b;
-    }
     
     public String getMenu() {
-        return "Operations:\n1. List available information \n2. Download files\n3. Exit\nChoose an option: ";
+        return "\nOperaciones:\n1. Mostrar lista de usuarios conectados \n2. Descargar fichero \n3. Salir\nElija una opción: ";
     }
     
     public void request_read() {
+        lock.lock();
         while (nw > 0) {
             try {
                 oktoread.await();
@@ -136,15 +152,18 @@ public class Servidor {
             }
         }
         nr++;
+        lock.unlock();
     }
 
     public void release_read() {
+        lock.lock();
         nr--;
         if (nr==0) oktowrite.signal();
-        
+        lock.unlock();
     }
 
     public void request_write() {
+        lock.lock();
         while (nr > 0 || nw > 0) {
             try {
             	dw++;
@@ -154,9 +173,11 @@ public class Servidor {
             }
         }
         nw++;
+        lock.unlock();
     }
 
     public void release_write() {
+        lock.lock();
         nw--;
         if (dw > 0) {
         	dw--;
@@ -165,6 +186,7 @@ public class Servidor {
         else {
         	oktoread.signal();
         }
+        lock.unlock();
     }
     
     // Métodos para la gestión de usuarios y conexiones

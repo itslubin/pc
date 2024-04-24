@@ -30,6 +30,10 @@ public class Usuario {
         return informacionCompartida;
     }
 
+    public void addInformacionCompartida(Informacion informacion) {
+        informacionCompartida.add(informacion);
+    }
+
     public String toString() {
         return nombreUsuario + "," + direccionIP + "," + informacionCompartida.size() + ";";
     }

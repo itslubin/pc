@@ -89,17 +89,20 @@ public class OyenteServidor implements Runnable {
 						mensaje = (Mensaje) in.readObject();
 						if (mensaje.getTipo() == 4) {
 							System.out.println(((MensajePreparadoSC) mensaje).getContenido());
-						} else { // TODO:innecesario
-							System.out.println("Error al recibir el mensaje preparado SC");
+
+							// Thread receptor = new Thread(new Receptor("localhost", 1235));
+							// receptor.start();
+						} else {
+							System.out.println(((MensajeError) mensaje).getContenido());
 						}
 					}
 
 					else if (op == 3) { // TODO
 						// 1.1 El cliente elige la opción de cerrar conexión
 						out.writeObject(new MensajeCerrarConexion(ClientID, ServerID, String.valueOf(ClientID)
-								+ "ha cerrado la conexión"));
+								+ " ha cerrado la conexión"));
 						System.out.println("Conexión cerrada");
-						
+
 						break;
 					}
 
@@ -112,6 +115,9 @@ public class OyenteServidor implements Runnable {
 					// 4.1 Mensaje Preparado CS
 					out.writeObject(new MensajePreparadoCS(ClientID, ServerID, String.valueOf(ClientID) +
 							"preparado para recibir fichero"));
+
+					// Thread emisor = new Thread(new Emisor(1235, "localhost"));
+					// emisor.start();
 				} else {
 					System.out.println("Error al recibir el mensaje emitir fichero");
 				}

@@ -1,13 +1,43 @@
 package pract5.p2;
 
-public class Emisor implements Runnable {
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
 
-    public Emisor() {
+import pract5.p2.mensaje.*;
+import pract5.p2.mensaje.MensajeString;
+
+public class Emisor implements Runnable {
+    private String filename;
+    private ServerSocket serverSocket;
+
+    public Emisor(int port, String filename) throws IOException {
+        serverSocket = new ServerSocket(port);
+        this.filename = filename;
     }
 
     @Override
     public void run() {
-        throw new UnsupportedOperationException("Unimplemented method 'run'");
+        try {
+            Socket clientSocket = serverSocket.accept();
+            
+            ObjectOutputStream out = new ObjectOutputStream(clientSocket.getOutputStream());
+            ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
+            
+            out.writeObject(new MensajeString(0, 0, filename));
+            System.out.println("Fichero " + filename + " enviado");
+            
+            Mensaje mensaje = (Mensaje) in.readObject();
+            if (mensaje.getTipo() == 7)
+                System.out.println("Conexión cerrada");
+
+            clientSocket.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
     }
     
 }
