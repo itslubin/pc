@@ -5,6 +5,10 @@ import java.io.Serializable;
 // Clase padre de la que heredan todos los tipos de mensajes
 public abstract class Mensaje implements Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	int id_from;
 	int id_to;
 	int tipo;

@@ -39,22 +39,28 @@ public class OyenteServidor implements Runnable {
 
 			// 1.1 Mandar datos cliente
 			out.writeObject(new MensajeCliente(0, 0, cliente));
+			
+			mensaje = (Mensaje) in.readObject(); // 2.2 Recibimos el menu
+			ClientID = mensaje.getIdTo();
+			ServerID = mensaje.getIdFrom();
+			cliente.setClientID(ClientID);
+			cliente.setServerID(ServerID);
+			
+			String menu = ((MensajeMenu) mensaje).getContenido();
 
 			while (true) {
-
-				mensaje = (Mensaje) in.readObject(); // 2.2 Recibimos el mensaje
-				ClientID = mensaje.getIdTo();
-				ServerID = mensaje.getIdFrom();
-				cliente.setClientID(ClientID);
-				cliente.setServerID(ServerID);
+				
+				// Imprimimos el menu por pantalla
+				System.out.print(menu);
+				int op = scanner.nextInt();
+				// Limpiar buffer
+				scanner.nextLine();
+				
+				if (in.available() > 0) { // Si recibimos peticion de enviar fichero
+		            mensaje = (Mensaje) in.readObject();
+				}
 
 				if (mensaje.getTipo() == 11) { // Recibimos menu
-
-					System.out.print(((MensajeMenu) mensaje).getContenido());
-					int op = scanner.nextInt();
-
-					// Limpiar buffer
-					scanner.nextLine();
 
 					if (op == 1) {
 						// 1.1 El cliente elige la opción de listar usuarios

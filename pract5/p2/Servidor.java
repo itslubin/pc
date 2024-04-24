@@ -139,7 +139,7 @@ public class Servidor {
     }
     
     public String getMenu() {
-        return "\nOperaciones:\n1. Mostrar lista de usuarios conectados \n2. Descargar fichero \n3. Salir\nElija una opción: ";
+        return "\nMenú de operaciones:\n1. Mostrar lista de usuarios conectados \n2. Descargar fichero \n3. Salir\nElija una opción: ";
     }
     
     public void request_read() {

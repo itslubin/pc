@@ -61,17 +61,18 @@ public class OyenteCliente implements Runnable {
             servidor.addConexion(clientID, new ConexionCliente(clientSocket, usuario));
 
             String menu = servidor.getMenu();
+            
 
             while (true) {
-
-                // 2.1 Mandamos menu
+            	
+            	// 2.1 Mandamos menu
                 out.writeObject(new MensajeMenu(servidor.getID(), clientID, menu));
-
-                // Cojemos el lock del cliente
-                servidor.lock(clientID);
 
                 // 1.2 Obtenemos el mensaje del usuario (opcion)
                 mensaje = (Mensaje) in.readObject();
+                
+                // Cojemos el lock del cliente
+                servidor.lock(clientID);
 
                 // El cliente quiere la lista
                 if (mensaje.getTipo() == 1) {
@@ -109,21 +110,28 @@ public class OyenteCliente implements Runnable {
                     String filename = ((MensajeString) mensaje).getContenido();
                     Map<Integer, ConexionCliente> clientes = servidor.getConexionesClientes();
                     for (Map.Entry<Integer, ConexionCliente> c1 : clientes.entrySet()) {
-                        Usuario u = c1.getValue().getUsuario();
-                        // buscar el archivo solicitado
-                        for (Informacion i : u.getInformacionCompartida()) {
-                            if (i.getNombre().equals(filename)) {
-                                emitorID = c1.getKey();
+                    	if (c1.getKey() != clientID) {
+                    		Usuario u = c1.getValue().getUsuario();
+                            // buscar el archivo solicitado
+                            for (Informacion i : u.getInformacionCompartida()) {
+                                if (i.getNombre().equals(filename)) {
+                                    emitorID = c1.getKey();
+                                }
                             }
-                        }
+                    	}
                     }
+                    
+                    System.out.println("Fin del bucle de buscar emisor");
+                    
 
                     if (emitorID != -1) {
 
-                        // Llamamos al lock del cliente emisor
+                        // Cojemos al lock del cliente emisor
                         servidor.lock(emitorID);
-
-                        // Llamar al Cliente emisor
+                        
+                        System.out.println("Encontramos un emisor");
+                        
+                        // Llamar al Cliente emisor, TODO: crear otro OyenteServidor/OyenteCliente para tener otro Socket
                         ConexionCliente cc = servidor.getConexionCliente(emitorID);
                         Socket s = cc.getSocket();
 
@@ -136,12 +144,14 @@ public class OyenteCliente implements Runnable {
 
                         // 4.2 Recibir Mensaje Preparado CS
                         mensaje = (Mensaje) inE.readObject();
+                        
+                        System.out.println(((MensajePreparadoCS) mensaje).getContenido());
+                        
+                        // 5.1 Mensaje Preparado SC al cliente receptor
                         if (mensaje.getTipo() == 3) {
-                            System.out.println(((MensajePreparadoCS) mensaje).getContenido());
-                            // 5.1 Mensaje Preparado SC al cliente receptor
-                            out.writeObject(
+                        	out.writeObject(
                                     new MensajePreparadoSC(servidor.getID(), clientID,
-                                            "Preparado para recibir fichero"));
+                                            "Preparado para recibir el fichero " + filename));
                         }
 
                         // Liberamos el lock
