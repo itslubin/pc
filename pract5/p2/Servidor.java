@@ -138,10 +138,6 @@ public class Servidor {
         return u;
     }
     
-    public String getMenu() {
-        return "\nMenú de operaciones:\n1. Mostrar lista de usuarios conectados \n2. Descargar fichero \n3. Salir\nElija una opción: ";
-    }
-    
     public void request_read() {
         lock.lock();
         while (nw > 0) {

@@ -36,10 +36,8 @@ public class OyenteCliente implements Runnable {
             // 1.2 Obtener el nombre del cliente
             mensaje = (Mensaje) in.readObject();
 
-            Cliente c = ((MensajeCliente) mensaje).getCliente();
-
-            if (c.getClientID() == 0) { // Es un nuevo cliente
-                usuario = new Usuario(c.getNombre(),
+            if (((MensajeCliente) mensaje).getID() == 0) { // Es un nuevo cliente
+                usuario = new Usuario(((MensajeCliente) mensaje).getNombre(),
                         clientSocket.getInetAddress().getHostAddress());
 
                 // Añadir el cliente a la tabla
@@ -54,16 +52,11 @@ public class OyenteCliente implements Runnable {
                    // if (!find) {
                    //
                    // }
-                clientID = c.getClientID();
+                clientID = ((MensajeCliente) mensaje).getID();
                 usuario = servidor.getUsuario(clientID);
             }
 
             servidor.addConexion(clientID, new ConexionCliente(clientSocket, usuario));
-
-            String menu = servidor.getMenu();
-
-            // 2.1 Mandamos menu
-            out.writeObject(new MensajeMenu(servidor.getID(), clientID, menu));
 
             while (true) {
 
@@ -130,7 +123,7 @@ public class OyenteCliente implements Runnable {
                         
                         System.out.println("Encontramos un emisor");
                         
-                        // Llamar al Cliente emisor, TODO: crear otro OyenteServidor/OyenteCliente para tener otro Socket
+                        // Llamar al Cliente emisor
                         ConexionCliente cc = servidor.getConexionCliente(emitorID);
                         Socket s = cc.getSocket();
 
@@ -168,6 +161,7 @@ public class OyenteCliente implements Runnable {
                 } else if (mensaje.getTipo() == 7) { // TODO
                     System.out.println(((MensajeCerrarConexion) mensaje).getContenido());
 
+                    out.writeObject(new MensajeCerrarConexion(servidor.getID(), clientID, "Conexion cerrada"));
                     // Quitamos al Cliente del servidor
                     servidor.removeConexion(clientID);
                     break;
