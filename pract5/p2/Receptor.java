@@ -16,23 +16,23 @@ public class Receptor implements Runnable {
     }
 
     @Override
-    public void run() { 
-        try{
+    public void run() {
+        try {
             ObjectOutputStream out = new ObjectOutputStream(clientSocket.getOutputStream());
             ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
-    
+
             Mensaje mensaje = (Mensaje) in.readObject();
             if (mensaje.getTipo() == 8)
-                System.out.println("Fichero " + ((MensajeString) mensaje).getContenido() + "recibido");
+                System.out.println("Fichero " + ((MensajeFichero) mensaje).getContenido() + " recibido");
             else
                 System.out.println("Fichero recibido erroneo");
-            
+
             out.writeObject(new MensajeCerrarConexion(0, 0, "Cerrando conexión"));
-    
+
             clientSocket.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    
+
 }

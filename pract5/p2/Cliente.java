@@ -1,6 +1,5 @@
 package pract5.p2;
 
-import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.Socket;
@@ -86,10 +85,9 @@ public class Cliente implements Serializable {
                 if (mensaje.getTipo() == 7) {
                     System.out.println(((MensajePreparadoSC) mensaje).getContenido());
 
-					Thread receptor = new Thread(new Receptor("localhost", 1235));
-					receptor.start();
-                }
-                else {
+                    Thread receptor = new Thread(new Receptor("localhost", 1235));
+                    receptor.start();
+                } else {
                     System.out.println(((MensajeError) mensaje).getContenido());
                 }
                 lock.unlock();
@@ -121,14 +119,14 @@ public class Cliente implements Serializable {
     public void emitirFichero(MensajeEmitirFichero mensaje) throws Exception {
         // 3.2 Recibir Mensaje emitir fichero
         System.out.println("Recibido mensaje emitir fichero de " + mensaje.getClienteID());
-        System.out.println("Fichero: " + mensaje.getContenido());
+        System.out.println("Fichero: " + mensaje.getFilename());
 
-        Thread emisor = new Thread(new Emisor(1235, "localhost"));
+        Thread emisor = new Thread(new Emisor(1235, mensaje.getFilename()));
         emisor.start();
 
         // 4.1 Mensaje Preparado CS
         out.writeObject(new MensajePreparadoCS(ClientID, ServerID,
-                String.valueOf(ClientID) + "preparado para recibir fichero", mensaje.getClienteID()));
+                String.valueOf(ClientID) + " preparado para emitir fichero", mensaje.getClienteID()));
     }
 
     public int getClientID() {

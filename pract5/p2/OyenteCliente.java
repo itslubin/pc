@@ -110,7 +110,8 @@ public class OyenteCliente implements Runnable {
 
                         // 3.1 Mensaje emitir fichero al cliente emisor
                         outE.writeObject(
-                                new MensajeEmitirFichero(servidor.getID(), emitorID, "Emito fichero", filename, clientID));
+                                new MensajeEmitirFichero(servidor.getID(), emitorID, "Emito fichero", filename,
+                                        clientID));
 
                         // Liberamos el lock
                         servidor.unlock(emitorID);
@@ -129,7 +130,7 @@ public class OyenteCliente implements Runnable {
                 else if (mensaje.getTipo() == 6) {
                     // 5.1 Mensaje Preparado SC al cliente receptor
                     System.out.println(((MensajePreparadoCS) mensaje).getContenido());
-                    
+
                     int receptorID = ((MensajePreparadoCS) mensaje).getReceptorID();
                     // Cojemos al lock del cliente receptor
                     servidor.lock(receptorID);
@@ -139,7 +140,7 @@ public class OyenteCliente implements Runnable {
 
                     // Llamar al Cliente receptor
                     outR.writeObject(new MensajePreparadoSC(servidor.getID(), receptorID,
-                            "Preparado para enviar el fichero"));
+                            "Preparado para recibir el fichero"));
 
                     // Liberamos el lock
                     servidor.unlock(receptorID);

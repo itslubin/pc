@@ -33,5 +33,5 @@ public class ConexionCliente {
     public ObjectInputStream getIn() {
         return in;
     }
-    
+
 }

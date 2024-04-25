@@ -10,5 +10,5 @@ public class MensajePedirFichero extends MensajeString {
     public int getTipo() {
         return 4;
     }
-    
+
 }

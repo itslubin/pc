@@ -10,5 +10,5 @@ public class MensajeError extends MensajeString {
     public int getTipo() {
         return 10;
     }
-    
+
 }

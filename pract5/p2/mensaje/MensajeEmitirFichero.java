@@ -22,5 +22,5 @@ public class MensajeEmitirFichero extends MensajeString {
     public int getClienteID() {
         return ClienteID;
     }
-    
+
 }

@@ -15,7 +15,7 @@ public class Informacion implements Serializable {
         this.nombre = Paths.get(path).getFileName().toString();
         this.path = path;
     }
-    
+
     // public byte[] getContenido() {
     //     return contenido;
     // }
@@ -28,7 +28,7 @@ public class Informacion implements Serializable {
         return path;
     }
 
-    /*TODO: La información realmente se manda al usuario, o solo se actualiza la tabla del servidor??*/
+    /* TODO: La información realmente se manda al usuario, o solo se actualiza la tabla del servidor??*/
     // public boolean saveAs(String path) {
     //     try {
     //         Files.write(Paths.get(path + "/" + nombre), contenido);
@@ -49,4 +49,3 @@ public class Informacion implements Serializable {
     }
 
 }
-

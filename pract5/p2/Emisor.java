@@ -21,13 +21,13 @@ public class Emisor implements Runnable {
     public void run() {
         try {
             Socket clientSocket = serverSocket.accept();
-            
+
             ObjectOutputStream out = new ObjectOutputStream(clientSocket.getOutputStream());
             ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
-            
+
             out.writeObject(new MensajeFichero(0, 0, filename));
             System.out.println("Fichero " + filename + " enviado");
-            
+
             Mensaje mensaje = (Mensaje) in.readObject();
             if (mensaje.getTipo() == 7)
                 System.out.println("Conexión cerrada");
@@ -36,7 +36,7 @@ public class Emisor implements Runnable {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        
+
     }
-    
+
 }
