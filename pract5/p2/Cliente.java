@@ -5,6 +5,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.Socket;
 import java.util.Scanner;
+import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import pract5.p2.mensaje.*;
@@ -12,18 +13,22 @@ import pract5.p2.mensaje.*;
 public class Cliente implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    private String nombre;
+    private String nombre = "";
     private int ClientID;
     private int ServerID;
     private Socket clientSocket;
-    private Lock lock;
     private ObjectOutputStream out;
+    private Mensaje mensaje;
+    private Lock lock;
+    private Condition cond;
 
     public Cliente(String host, int port) throws Exception {
         this.lock = new ReentrantLock();
+        this.cond = lock.newCondition();
 
         // Conecta al servidor en el puerto 1234 en localhost
         clientSocket = new Socket(host, port);
+        out = new ObjectOutputStream(clientSocket.getOutputStream());
     }
 
     public void execute() throws Exception {
@@ -32,22 +37,21 @@ public class Cliente implements Serializable {
 
         System.out.println("Introduce tu ID de usuario o 0 en caso de nuevo usuario: ");
         ClientID = scanner.nextInt();
-
-        // Limpiar el buffer del scanner
-        scanner.nextLine();
+        scanner.nextLine(); // Limpiar el buffer del scanner
 
         if (ClientID == 0) {
             System.out.println("Introduce tu nombre de usuario: ");
             nombre = scanner.nextLine();
         }
 
-        Thread clientThread = new Thread(new OyenteServidor(this, clientSocket));
+        Thread clientThread = new Thread(new OyenteServidor(this, clientSocket, lock, cond));
         clientThread.start();
 
-        out = new ObjectOutputStream(clientSocket.getOutputStream());
-
         // 1.1 Mandar datos cliente
-        out.writeObject(new MensajeCliente(0, 0, ClientID, nombre));
+        out.writeObject(new MensajeConexion(0, 0, ClientID, nombre));
+        lock.lock();
+        cond.await();
+        lock.unlock();
 
         while (true) {
             // Mostar menu
@@ -58,25 +62,37 @@ public class Cliente implements Serializable {
             scanner.nextLine();
 
             if (op == 1) { // Pedir lista de usuarios
+                lock.lock();
                 // 1.1 El cliente elige la opción de listar usuarios
                 out.writeObject(new MensajeListaUsuario(ClientID, ServerID, "Listar usuarios"));
 
-                // 3.1 Confirmar la recepción de la lista de usuarios registrados
-                out.writeObject(new MensajeConfListaUsuario(ClientID, ServerID, String.valueOf(ClientID) +
-                        " ha confirmado la recepción de la lista de usuarios registrados"));
-
+                // Esperar a que el servidor envíe la lista de usuarios
+                cond.await();
+                System.out.println(((MensajeConfListaUsuario) mensaje).getContenido());
+                lock.unlock();
             }
 
             else if (op == 2) { // Descargar fichero
+                lock.lock();
                 // 1.1 El cliente elige la opción de descargar fichero
-                out.writeObject(
-                        new MensajePedirFichero(ClientID, ServerID, "Pedir fichero"));
-
                 System.out.println("Introduzca el fichero que quiere descargar: ");
                 String file_name = scanner.nextLine();
 
                 // 2.1 Enviar el nombre del fichero
-                out.writeObject(new MensajeString(ClientID, ServerID, file_name));
+                out.writeObject(new MensajePedirFichero(ClientID, ServerID, file_name));
+
+                // Esperar a que el servidor envíe el preparado SC
+                cond.await();
+                if (mensaje.getTipo() == 7) {
+                    System.out.println(((MensajePreparadoSC) mensaje).getContenido());
+
+					Thread receptor = new Thread(new Receptor("localhost", 1235));
+					receptor.start();
+                }
+                else {
+                    System.out.println(((MensajeError) mensaje).getContenido());
+                }
+                lock.unlock();
             }
 
             else if (op == 3) { // Salir
@@ -102,41 +118,41 @@ public class Cliente implements Serializable {
         return "\nMenú de operaciones:\n1. Mostrar lista de usuarios conectados \n2. Descargar fichero \n3. Salir\nElija una opción: ";
     }
 
-    public void enviarMensaje(Mensaje m) throws IOException {
-        out.writeObject(m);
-    }
+    public void emitirFichero(MensajeEmitirFichero mensaje) throws Exception {
+        // 3.2 Recibir Mensaje emitir fichero
+        System.out.println("Recibido mensaje emitir fichero de " + mensaje.getClienteID());
+        System.out.println("Fichero: " + mensaje.getContenido());
 
-    public void setClientID(int ClientID) {
-        this.ClientID = ClientID;
-    }
+        Thread emisor = new Thread(new Emisor(1235, "localhost"));
+        emisor.start();
 
-    public void setServerID(int ServerID) {
-        this.ServerID = ServerID;
+        // 4.1 Mensaje Preparado CS
+        out.writeObject(new MensajePreparadoCS(ClientID, ServerID,
+                String.valueOf(ClientID) + "preparado para recibir fichero", mensaje.getClienteID()));
     }
 
     public int getClientID() {
         return ClientID;
     }
 
+    public void setClientID(int ClientID) {
+        this.ClientID = ClientID;
+    }
+
     public int getServerID() {
         return ServerID;
+    }
+
+    public void setServerID(int ServerID) {
+        this.ServerID = ServerID;
     }
 
     public String getNombre() {
         return nombre;
     }
 
-    public void emitirFichero(MensajeEmitirFichero mensaje) throws Exception {
-        // 3.2 Recibir Mensaje emitir fichero
-        System.out.println(mensaje.getContenido());
-        System.out.println("Fichero: " + mensaje.getFilename());
-        // 4.1 Mensaje Preparado CS
-        out.writeObject(new MensajePreparadoCS(
-                ClientID, ServerID,
-                String.valueOf(ClientID) + "preparado para recibir fichero"));
-
-        // Thread emisor = new Thread(new Emisor(1235, "localhost"));
-        // emisor.start();
+    public void setMensaje(Mensaje mensaje) {
+        this.mensaje = mensaje;
     }
 
     // Métodos para interactuar con el servidor y otros clientes

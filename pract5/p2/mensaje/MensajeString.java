@@ -1,6 +1,6 @@
 package pract5.p2.mensaje;
 
-public class MensajeString extends Mensaje {
+public abstract class MensajeString extends Mensaje {
 	private String contenido;
 
     public MensajeString(int id_from, int id_to, String contenido) {
@@ -11,9 +11,4 @@ public class MensajeString extends Mensaje {
     public String getContenido() {
         return contenido;
     }
-
-	@Override
-	public int getTipo() {
-		return 8;
-	}
 }

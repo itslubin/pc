@@ -16,17 +16,16 @@ public abstract class Mensaje implements Serializable {
 	/*
 	 * Tipos de mensajes:
 	 * 0: Mensaje de conexion
-	 * 1: Mensaje de lista de usuarios
-	 * 2: Mensaje emitir fichero
-	 * 3: Mensaje preparado para recibir fichero CS
-	 * 4: Mensaje preparado para recibir fichero SC
-	 * 5: Mensaje de confirmación conexión
-	 * 6: Mensaje de confirmación de lista de usuarios
-	 * 7: Mensaje cerrar conexión
-	 * 8: Mensaje de confirmación
-	 * 9: Mensaje Opcion
-	 * 10: Mensaje tipo Usuario
-	 * 11: Mensaje de menu
+	 * 1: Mensaje de confirmación conexión
+	 * 2: Mensaje de lista de usuarios
+	 * 3: Mensaje de confirmación de lista de usuarios
+	 * 4: Mensaje de pedir fichero
+	 * 5: Mensaje de emitir fichero
+	 * 6: Mensaje de preparado para enviar fichero CS
+	 * 7: Mensaje de preparado para enviar fichero SC
+	 * 8: Mensaje de fichero
+	 * 9: Mensaje de cerrar conexión
+	 * 10: Mensaje de error
 	 */
 
 	Mensaje(int id_from, int id_to) {

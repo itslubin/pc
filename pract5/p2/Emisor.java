@@ -7,7 +7,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 import pract5.p2.mensaje.*;
-import pract5.p2.mensaje.MensajeString;
 
 public class Emisor implements Runnable {
     private String filename;
@@ -26,7 +25,7 @@ public class Emisor implements Runnable {
             ObjectOutputStream out = new ObjectOutputStream(clientSocket.getOutputStream());
             ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
             
-            out.writeObject(new MensajeString(0, 0, filename));
+            out.writeObject(new MensajeFichero(0, 0, filename));
             System.out.println("Fichero " + filename + " enviado");
             
             Mensaje mensaje = (Mensaje) in.readObject();

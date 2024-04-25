@@ -8,6 +8,6 @@ public class MensajeCerrarConexion extends MensajeString {
 
     @Override
     public int getTipo() {
-        return 7;
+        return 9;
     }
 }

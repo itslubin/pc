@@ -2,6 +2,9 @@ package pract5.p2;
 
 import java.io.ObjectInputStream;
 import java.net.Socket;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+
 import pract5.p2.mensaje.*;
 
 public class OyenteServidor implements Runnable {
@@ -10,10 +13,14 @@ public class OyenteServidor implements Runnable {
 	Socket clientSocket;
 	int ClientID;
 	int ServerID;
+	Lock lock;
+	Condition cond;
 
-	public OyenteServidor(Cliente cliente, Socket clientSocket) {
+	public OyenteServidor(Cliente cliente, Socket clientSocket, Lock lock, Condition cond) {
 		this.cliente = cliente;
 		this.clientSocket = clientSocket;
+		this.lock = lock;
+		this.cond = cond;
 	}
 
 	@Override
@@ -27,8 +34,11 @@ public class OyenteServidor implements Runnable {
 			// 2.2 Confirmacion datos de cliente
 			// 5.2 Recibido Mensaje Preparado SC
 			mensaje = (Mensaje) in.readObject();
-			if (mensaje.getTipo() == 5) {
+			if (mensaje.getTipo() == 1) {
 				System.out.println("Conección confirmada");
+				lock.lock();
+				cond.signal();
+				lock.unlock();
 			} else {
 				System.out.println("Error al establecer la conexión");
 			}
@@ -39,31 +49,40 @@ public class OyenteServidor implements Runnable {
 			cliente.setServerID(ServerID);
 
 			while (true) {
-				// 2.2 Recibe la lista de usuarios registrados
-
 				mensaje = (Mensaje) in.readObject();
 
-				if (mensaje.getTipo() == 2) { // Recibimos emitir fichero
+				// Recibimos mensaje de confirmación de lista de usuarios
+				if (mensaje.getTipo() == 3) {
+					lock.lock();
+					cliente.setMensaje(mensaje);
+					cond.signal();
+					lock.unlock();
+				}
+
+				// Recibimos mensaje de emitir fichero
+				else if (mensaje.getTipo() == 5) {
 					cliente.emitirFichero((MensajeEmitirFichero) mensaje);
 				}
 
-				else if (mensaje.getTipo() == 1) {
-					System.out.println(((MensajeString) mensaje).getContenido());
-				}
-
-				else if (mensaje.getTipo() == 4) {
-					if (mensaje.getTipo() == 4) {
-						System.out.println(((MensajePreparadoSC) mensaje).getContenido());
-
-						// Thread receptor = new Thread(new Receptor("localhost", 1235));
-						// receptor.start();
-					} else {
-						System.out.println(((MensajeError) mensaje).getContenido());
-					}
-				}
-
+				// Recibimos mensaje de preparado para enviar fichero SC
 				else if (mensaje.getTipo() == 7) {
+					lock.lock();
+					cliente.setMensaje(mensaje);
+					cond.signal();
+					lock.unlock();
+				}
+
+				// Recibimos mensaje de cerrar conexión
+				else if (mensaje.getTipo() == 9) {
 					break;
+				}
+
+				// Recibimos mensaje de error
+				else if (mensaje.getTipo() == 10) {
+					lock.lock();
+					cliente.setMensaje(mensaje);
+					cond.signal();
+					lock.unlock();
 				}
 			}
 

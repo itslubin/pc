@@ -8,6 +8,6 @@ public class MensajeConfListaUsuario extends MensajeString {
 
     @Override
     public int getTipo() {
-        return 6;
+        return 3;
     }
 }

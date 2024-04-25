@@ -8,7 +8,7 @@ public class MensajePedirFichero extends MensajeString {
 
     @Override
     public int getTipo() {
-        return 2;
+        return 4;
     }
     
 }

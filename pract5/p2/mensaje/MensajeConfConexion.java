@@ -8,7 +8,7 @@ public class MensajeConfConexion extends MensajeString {
 
     @Override
     public int getTipo() {
-        return 5;
+        return 1;
     }
 
 }

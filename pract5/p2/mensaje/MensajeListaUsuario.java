@@ -8,7 +8,7 @@ public class MensajeListaUsuario extends MensajeString {
 
     @Override
     public int getTipo() {
-        return 1;
+        return 2;
     }
 
 }

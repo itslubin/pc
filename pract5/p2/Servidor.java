@@ -15,7 +15,7 @@ public class Servidor {
     private ServerSocket serverSocket;
     private volatile Map<Integer, Usuario> usuariosRegistrados; // Clave: ID_Usuario, Valor: Usuario
     private volatile Map<Integer, ConexionCliente> conexionesClientes; // Clave: ID_Usuario, Valor: ConexionCliente
-    
+
     // Variables Lectores-escritores
     int nr = 0;
     int nw = 0;
@@ -54,11 +54,11 @@ public class Servidor {
     public int getID() { // Read
         return id;
     }
-    
+
     public int getNewId() throws InterruptedException { // Write
-    	request_write();
-    	int c = ++counter;
-    	release_write();
+        request_write();
+        int c = ++counter;
+        release_write();
         return c;
     }
 
@@ -81,7 +81,7 @@ public class Servidor {
     }
 
     public void registrarUsuario(int id, Usuario usuario) throws InterruptedException, IOException { // Write
-    	request_write();
+        request_write();
         usuariosRegistrados.put(id, usuario);
         // debug
         usuario.addInformacionCompartida(new Informacion("Amélie"));
@@ -91,53 +91,53 @@ public class Servidor {
     }
 
     public Map<Integer, Usuario> getUsuariosRegistrados() { // Read
-    	request_read();
-    	Map<Integer, Usuario> aux = new HashMap<>(usuariosRegistrados);
-    	release_read();
+        request_read();
+        Map<Integer, Usuario> aux = new HashMap<>(usuariosRegistrados);
+        release_read();
         return aux;
     }
 
     public void addConexion(int id, ConexionCliente conexion) throws InterruptedException { // Write
-    	request_write();
+        request_write();
         conexionesClientes.put(id, conexion);
         release_write();
     }
 
     public void removeConexion(int id) throws InterruptedException { // Write
-    	request_write();
+        request_write();
         conexionesClientes.remove(id);
         release_write();
     }
 
     public Map<Integer, ConexionCliente> getConexionesClientes() { // Read
-    	request_read();
-    	Map<Integer, ConexionCliente> aux = new HashMap<>(conexionesClientes);
-    	release_read();
+        request_read();
+        Map<Integer, ConexionCliente> aux = new HashMap<>(conexionesClientes);
+        release_read();
         return aux;
     }
 
     public boolean buscarCliente(int id) { // Read
-    	boolean c;
-    	request_read();
-    	c = usuariosRegistrados.containsKey(id);
-    	release_read();
+        boolean c;
+        request_read();
+        c = usuariosRegistrados.containsKey(id);
+        release_read();
         return c;
     }
-    
+
     public ConexionCliente getConexionCliente(int id) { // Read
-    	request_read();
-    	ConexionCliente cc = conexionesClientes.get(id);
-    	release_read();
-    	return cc;
+        request_read();
+        ConexionCliente cc = conexionesClientes.get(id);
+        release_read();
+        return cc;
     }
 
     public Usuario getUsuario(int clientID) { // Read
-    	request_read();
-    	Usuario u = usuariosRegistrados.get(clientID);
-    	release_read();
+        request_read();
+        Usuario u = usuariosRegistrados.get(clientID);
+        release_read();
         return u;
     }
-    
+
     public void request_read() {
         lock.lock();
         while (nw > 0) {
@@ -154,7 +154,8 @@ public class Servidor {
     public void release_read() {
         lock.lock();
         nr--;
-        if (nr==0) oktowrite.signal();
+        if (nr == 0)
+            oktowrite.signal();
         lock.unlock();
     }
 
@@ -162,7 +163,7 @@ public class Servidor {
         lock.lock();
         while (nr > 0 || nw > 0) {
             try {
-            	dw++;
+                dw++;
                 oktowrite.await();
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -176,15 +177,14 @@ public class Servidor {
         lock.lock();
         nw--;
         if (dw > 0) {
-        	dw--;
-        	oktowrite.signal();
-        }
-        else {
-        	oktoread.signal();
+            dw--;
+            oktowrite.signal();
+        } else {
+            oktoread.signal();
         }
         lock.unlock();
     }
-    
+
     // Métodos para la gestión de usuarios y conexiones
     public static void main(String[] args) {
         try {

@@ -4,7 +4,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.Map;
-import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import pract5.p2.mensaje.*;
@@ -16,6 +15,7 @@ public class OyenteCliente implements Runnable {
     private Usuario usuario;
     private Servidor servidor;
     private Socket clientSocket;
+    private int clientID;
 
     public OyenteCliente(Socket clientSocket, Servidor servidor) {
         this.clientSocket = clientSocket;
@@ -28,46 +28,37 @@ public class OyenteCliente implements Runnable {
             // Obtiene los streams de entrada y salida para comunicarse con el cliente
             ObjectOutputStream out = new ObjectOutputStream(clientSocket.getOutputStream());
             ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
-
             Mensaje mensaje;
 
-            int clientID = servidor.getNewId();
-
-            // 1.2 Obtener el nombre del cliente
+            // 1.2 Obtener la mensaje de conexión
             mensaje = (Mensaje) in.readObject();
 
-            if (((MensajeCliente) mensaje).getID() == 0) { // Es un nuevo cliente
-                usuario = new Usuario(((MensajeCliente) mensaje).getNombre(),
+            clientID = ((MensajeConexion) mensaje).getID();
+            if (clientID == 0 || !servidor.buscarCliente(clientID)) { // Es un nuevo cliente o no existe
+                clientID = servidor.getNewId();
+                usuario = new Usuario(((MensajeConexion) mensaje).getNombre(),
                         clientSocket.getInetAddress().getHostAddress());
 
                 // Añadir el cliente a la tabla
                 servidor.registrarUsuario(clientID, usuario);
-
-                Lock lock = new ReentrantLock();
-                servidor.registarLock(clientID, lock);
-            }
-
-            else { // Es un usuario existente
-                   // boolean find = servidor.buscarCliente(c.getClientID());
-                   // if (!find) {
-                   //
-                   // }
-                clientID = ((MensajeCliente) mensaje).getID();
+            } else {
                 usuario = servidor.getUsuario(clientID);
             }
 
-            servidor.addConexion(clientID, new ConexionCliente(clientSocket, usuario));
+            out.writeObject(new MensajeConfConexion(clientID, clientID, "Conexión confirmada"));
+            servidor.registarLock(clientID, new ReentrantLock());
+            servidor.addConexion(clientID, new ConexionCliente(clientSocket, usuario, in, out));
 
             while (true) {
 
-                // 1.2 Obtenemos el mensaje del usuario (opcion)
+                // 1.2 Obtenemos el mensaje del usuario (opcion o emitir fichero)
                 mensaje = (Mensaje) in.readObject();
-                
+
                 // Cojemos el lock del cliente
                 servidor.lock(clientID);
 
                 // El cliente quiere la lista
-                if (mensaje.getTipo() == 1) {
+                if (mensaje.getTipo() == 2) {
 
                     Map<Integer, ConexionCliente> clientes = servidor.getConexionesClientes();
                     int contador = 1;
@@ -85,80 +76,78 @@ public class OyenteCliente implements Runnable {
                     }
 
                     // 2.1 Manda la lista
-                    out.writeObject(new MensajeString(servidor.getID(), clientID, listaUsuarios));
+                    out.writeObject(new MensajeConfListaUsuario(servidor.getID(), clientID, listaUsuarios));
+                }
 
-                    // Recibir la confirmacion de la lista del OyenteServidor
-                    Mensaje mConfListaUsuarios = (Mensaje) in.readObject(); // 3.2 recibimos la confirmacion
-
-                    // Imprimir por consola la confirmación
-                    System.out.println(((MensajeConfListaUsuario) mConfListaUsuarios).getContenido());
-
-                } else if (mensaje.getTipo() == 2) { // El cliente quiere descargar un fichero
+                else if (mensaje.getTipo() == 4) { // El cliente quiere descargar un fichero
                     int emitorID = -1;
-                    ObjectOutputStream outE;
-                    ObjectInputStream inE;
                     // 2.2 Recibimos el nombre del fichero
-                    mensaje = (Mensaje) in.readObject();
-                    String filename = ((MensajeString) mensaje).getContenido();
+                    String filename = ((MensajePedirFichero) mensaje).getContenido();
                     Map<Integer, ConexionCliente> clientes = servidor.getConexionesClientes();
                     for (Map.Entry<Integer, ConexionCliente> c1 : clientes.entrySet()) {
-                    	if (c1.getKey() != clientID) {
-                    		Usuario u = c1.getValue().getUsuario();
+                        if (c1.getKey() != clientID) {
+                            Usuario u = c1.getValue().getUsuario();
                             // buscar el archivo solicitado
                             for (Informacion i : u.getInformacionCompartida()) {
                                 if (i.getNombre().equals(filename)) {
                                     emitorID = c1.getKey();
                                 }
                             }
-                    	}
+                        }
                     }
-                    
+
                     System.out.println("Fin del bucle de buscar emisor");
-                    
 
                     if (emitorID != -1) {
-
                         // Cojemos al lock del cliente emisor
                         servidor.lock(emitorID);
-                        
+
                         System.out.println("Encontramos un emisor");
-                        
+
                         // Llamar al Cliente emisor
                         ConexionCliente cc = servidor.getConexionCliente(emitorID);
-                        Socket s = cc.getSocket();
-
-                        outE = new ObjectOutputStream(s.getOutputStream());
-                        inE = new ObjectInputStream(s.getInputStream());
+                        ObjectOutputStream outE = cc.getOut();
 
                         // 3.1 Mensaje emitir fichero al cliente emisor
                         outE.writeObject(
-                                new MensajeEmitirFichero(servidor.getID(), emitorID, "Emito fichero", filename));
-
-                        // 4.2 Recibir Mensaje Preparado CS
-                        mensaje = (Mensaje) inE.readObject();
-                        
-                        System.out.println(((MensajePreparadoCS) mensaje).getContenido());
-                        
-                        // 5.1 Mensaje Preparado SC al cliente receptor
-                        if (mensaje.getTipo() == 3) {
-                        	out.writeObject(
-                                    new MensajePreparadoSC(servidor.getID(), clientID,
-                                            "Preparado para recibir el fichero " + filename));
-                        }
+                                new MensajeEmitirFichero(servidor.getID(), emitorID, "Emito fichero", filename, clientID));
 
                         // Liberamos el lock
                         servidor.unlock(emitorID);
 
                     } else {
                         out.writeObject(new MensajeError(servidor.getID(), clientID,
-                                "Error al recibir el mensaje preparado SC, el fichero "
-                                        + filename + " no se ha encontrado"));
+                                "Error al recibir el mensaje preparado SC, el fichero " + filename
+                                        + " no se ha encontrado"));
                         System.out.println(
                                 "Fichero " + filename + " solicitado por el cliente " + clientID + " no encontrado");
                         continue;
                     }
 
-                } else if (mensaje.getTipo() == 7) { // TODO
+                }
+
+                else if (mensaje.getTipo() == 6) {
+                    // 5.1 Mensaje Preparado SC al cliente receptor
+                    System.out.println(((MensajePreparadoCS) mensaje).getContenido());
+                    
+                    int receptorID = ((MensajePreparadoCS) mensaje).getReceptorID();
+                    // Cojemos al lock del cliente receptor
+                    servidor.lock(receptorID);
+
+                    ConexionCliente cc = servidor.getConexionCliente(receptorID);
+                    ObjectOutputStream outR = cc.getOut();
+
+                    // Llamar al Cliente receptor
+                    outR.writeObject(new MensajePreparadoSC(servidor.getID(), receptorID,
+                            "Preparado para enviar el fichero"));
+
+                    // Liberamos el lock
+                    servidor.unlock(receptorID);
+
+                    System.out.println("Finish Preparado SC");
+                }
+
+                else if (mensaje.getTipo() == 9) { // Cerrar conexión
                     System.out.println(((MensajeCerrarConexion) mensaje).getContenido());
 
                     out.writeObject(new MensajeCerrarConexion(servidor.getID(), clientID, "Conexion cerrada"));

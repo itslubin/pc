@@ -8,7 +8,7 @@ public class MensajePreparadoSC extends MensajeString {
 
     @Override
     public int getTipo() {
-        return 4;
+        return 7;
     }
 
 }
