@@ -33,6 +33,7 @@ public class Emisor implements Runnable {
                 System.out.println("Conexión cerrada");
 
             clientSocket.close();
+            serverSocket.close();
         } catch (Exception e) {
             e.printStackTrace();
         }

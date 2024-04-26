@@ -35,7 +35,7 @@ public class OyenteServidor implements Runnable {
 			// 5.2 Recibido Mensaje Preparado SC
 			mensaje = (Mensaje) in.readObject();
 			if (mensaje.getTipo() == 1) {
-				System.out.println("Conección confirmada");
+				System.out.println("Conexión confirmada");
 				lock.lock();
 				cond.signal();
 				lock.unlock();

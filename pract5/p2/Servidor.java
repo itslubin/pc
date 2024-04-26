@@ -84,7 +84,7 @@ public class Servidor {
         request_write();
         usuariosRegistrados.put(id, usuario);
         // debug
-        usuario.addInformacionCompartida(new Informacion("Amélie"));
+        usuario.addInformacionCompartida(new Informacion("Amelie"));
         usuario.addInformacionCompartida(new Informacion("Godfather"));
         usuario.addInformacionCompartida(new Informacion("Titanic"));
         release_write();

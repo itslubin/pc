@@ -56,9 +56,14 @@ public class Cliente implements Serializable {
             // Mostar menu
             System.out.println(getMenu());
 
-            int op = scanner.nextInt();
-            // Limpiar buffer
-            scanner.nextLine();
+            int op;
+            String aux = scanner.nextLine();
+            try {
+                op = Integer.parseInt(aux);
+            } catch (NumberFormatException e) {
+                System.out.println("Opción " + aux + " no válida");
+                continue;
+            }
 
             if (op == 1) { // Pedir lista de usuarios
                 lock.lock();
@@ -103,8 +108,8 @@ public class Cliente implements Serializable {
             }
 
             else {
-                // Opcion no valida
-                System.out.println("Opción no válida");
+                // Opcion numerica no valida
+                System.out.println("Opción " + op + " no válida");
             }
         }
 

@@ -66,8 +66,7 @@ public class OyenteCliente implements Runnable {
                     for (Map.Entry<Integer, ConexionCliente> c1 : clientes.entrySet()) {
                         Usuario u = c1.getValue().getUsuario();
                         listaUsuarios += "\n" + contador++ + ". Nombre: " + u.getNombreUsuario() + " | ID: "
-                                + c1.getKey()
-                                + "\n";
+                                + c1.getKey() + "\n";
                         listaUsuarios += "Información compartida:\n";
                         int contador2 = 1;
                         for (Informacion i : u.getInformacionCompartida()) {
@@ -122,7 +121,6 @@ public class OyenteCliente implements Runnable {
                                         + " no se ha encontrado"));
                         System.out.println(
                                 "Fichero " + filename + " solicitado por el cliente " + clientID + " no encontrado");
-                        continue;
                     }
 
                 }
