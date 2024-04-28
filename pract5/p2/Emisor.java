@@ -26,11 +26,11 @@ public class Emisor implements Runnable {
             ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
 
             out.writeObject(new MensajeFichero(0, 0, filename));
-            System.out.println("Fichero " + filename + " enviado");
+            System.out.println("### Log cliente: Fichero " + filename + " enviado ###");
 
             Mensaje mensaje = (Mensaje) in.readObject();
-            if (mensaje.getTipo() == 7)
-                System.out.println("Conexión cerrada");
+            if (mensaje.getTipo() == 9)
+                System.out.println("### Log cliente: Conexión emisor cerrada ###");
 
             clientSocket.close();
             serverSocket.close();

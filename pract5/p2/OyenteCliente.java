@@ -30,7 +30,7 @@ public class OyenteCliente implements Runnable {
             ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
             Mensaje mensaje;
 
-            // 1.2 Obtener la mensaje de conexión
+            // 1.2 Obtener el mensaje de conexión
             mensaje = (Mensaje) in.readObject();
 
             clientID = ((MensajeConexion) mensaje).getID();
@@ -51,7 +51,7 @@ public class OyenteCliente implements Runnable {
 
             while (true) {
 
-                // 1.2 Obtenemos el mensaje del usuario (opcion o emitir fichero)
+                // 1.2 Obtenemos el mensaje del usuario
                 mensaje = (Mensaje) in.readObject();
 
                 // Cojemos el lock del cliente
@@ -94,14 +94,11 @@ public class OyenteCliente implements Runnable {
                             }
                         }
                     }
-
-                    System.out.println("Fin del bucle de buscar emisor");
-
+                    
+                    
                     if (emitorID != -1) {
                         // Cojemos al lock del cliente emisor
                         servidor.lock(emitorID);
-
-                        System.out.println("Encontramos un emisor");
 
                         // Llamar al Cliente emisor
                         ConexionCliente cc = servidor.getConexionCliente(emitorID);
@@ -117,8 +114,8 @@ public class OyenteCliente implements Runnable {
 
                     } else {
                         out.writeObject(new MensajeError(servidor.getID(), clientID,
-                                "Error al recibir el mensaje preparado SC, el fichero " + filename
-                                        + " no se ha encontrado"));
+                                "### Log cliente: Error al recibir el mensaje preparado SC, el fichero " + filename
+                                        + " no se ha encontrado ###"));
                         System.out.println(
                                 "Fichero " + filename + " solicitado por el cliente " + clientID + " no encontrado");
                     }
@@ -138,7 +135,7 @@ public class OyenteCliente implements Runnable {
 
                     // Llamar al Cliente receptor
                     outR.writeObject(new MensajePreparadoSC(servidor.getID(), receptorID,
-                            "Preparado para recibir el fichero"));
+                            "### Log cliente: Preparado para recibir el fichero ##"));
 
                     // Liberamos el lock
                     servidor.unlock(receptorID);
@@ -153,6 +150,14 @@ public class OyenteCliente implements Runnable {
                     // Quitamos al Cliente del servidor
                     servidor.removeConexion(clientID);
                     break;
+                }
+                
+                else if (mensaje.getTipo() == 11) { // Subir fichero
+                	System.out.println(((MensajeSubirFichero) mensaje).getContenido());
+                	
+                	servidor.addFichero(((MensajeSubirFichero) mensaje).getFilename(), clientID);
+                	
+                	out.writeObject(new MensajeSubirFicheroConf(clientID, clientID, "### Log cliente: Fichero subido con exito ###"));
                 }
 
                 servidor.unlock(clientID);

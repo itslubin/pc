@@ -7,7 +7,7 @@ import java.util.concurrent.locks.Lock;
 
 import pract5.p2.mensaje.*;
 
-public class OyenteServidor implements Runnable {
+public class OyenteServidor implements Runnable { // Se encarga de recibir los mensajes
 	// Constructor y método run para la escucha del servidor
 	Cliente cliente;
 	Socket clientSocket;
@@ -31,8 +31,7 @@ public class OyenteServidor implements Runnable {
 			// Obtén los streams de entrada y salida para comunicarte con el servidor
 			ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
 
-			// 2.2 Confirmacion datos de cliente
-			// 5.2 Recibido Mensaje Preparado SC
+			// Confirmacion datos de cliente
 			mensaje = (Mensaje) in.readObject();
 			if (mensaje.getTipo() == 1) {
 				System.out.println("Conexión confirmada");
@@ -71,6 +70,14 @@ public class OyenteServidor implements Runnable {
 					cond.signal();
 					lock.unlock();
 				}
+				
+				// Recibimos confirmacion de subida de fichero
+				else if (mensaje.getTipo() == 12) {
+					lock.lock();
+					cliente.setMensaje(mensaje);
+					cond.signal();
+					lock.unlock();
+				}
 
 				// Recibimos mensaje de cerrar conexión
 				else if (mensaje.getTipo() == 9) {
@@ -84,6 +91,7 @@ public class OyenteServidor implements Runnable {
 					cond.signal();
 					lock.unlock();
 				}
+				
 			}
 
 			clientSocket.close();

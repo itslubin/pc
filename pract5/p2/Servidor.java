@@ -108,6 +108,12 @@ public class Servidor {
         conexionesClientes.remove(id);
         release_write();
     }
+    
+    public void addFichero(String filename, int id) throws IOException { // write
+    	request_write();
+    	usuariosRegistrados.get(id).addInformacionCompartida(new Informacion(filename));
+    	release_write();
+    }
 
     public Map<Integer, ConexionCliente> getConexionesClientes() { // Read
         request_read();

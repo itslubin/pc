@@ -23,11 +23,12 @@ public class Receptor implements Runnable {
 
             Mensaje mensaje = (Mensaje) in.readObject();
             if (mensaje.getTipo() == 8)
-                System.out.println("Fichero " + ((MensajeFichero) mensaje).getContenido() + " recibido");
+                System.out.println("### Log cliente: Fichero " + ((MensajeFichero) mensaje).getContenido() + " recibido ###");
             else
-                System.out.println("Fichero recibido erroneo");
+                System.out.println("### Log cliente: Fichero recibido erroneo ###");
 
             out.writeObject(new MensajeCerrarConexion(0, 0, "Cerrando conexión"));
+            System.out.println("### Log cliente: Conexión receptor cerrada ###");
 
             clientSocket.close();
         } catch (Exception e) {

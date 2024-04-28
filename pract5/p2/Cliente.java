@@ -9,7 +9,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import pract5.p2.mensaje.*;
 
-public class Cliente implements Serializable {
+public class Cliente implements Serializable { // Se encarga del envio de mensajes
 
     private static final long serialVersionUID = 1L;
     private String nombre = "";
@@ -97,8 +97,24 @@ public class Cliente implements Serializable {
                 }
                 lock.unlock();
             }
+            
+            else if (op == 3) { // Subir fichero
+            	lock.lock();
+            	System.out.println("Introduzca el nombre del fichero que quiere subir: ");
+            	String file_name = scanner.nextLine();
 
-            else if (op == 3) { // Salir
+                // 2.1 Enviar el nombre del fichero
+                out.writeObject(new MensajeSubirFichero(ClientID, ServerID, "Cliente " + ClientID + " sube el fichero " + file_name,  file_name));
+                cond.await(); // Esperar a recibir el mensaje
+                
+                if (mensaje.getTipo() == 12) { // Recibir confirmacion
+                	System.out.println(((MensajeSubirFicheroConf) mensaje).getContenido());
+                }
+                
+                lock.unlock();
+            }
+
+            else if (op == 4) { // Salir
                 // 1.1 El cliente elige la opción de cerrar conexión
                 out.writeObject(new MensajeCerrarConexion(ClientID, ServerID, String.valueOf(ClientID)
                         + " ha cerrado la conexión"));
@@ -118,13 +134,13 @@ public class Cliente implements Serializable {
     }
 
     public String getMenu() {
-        return "\nMenú de operaciones:\n1. Mostrar lista de usuarios conectados \n2. Descargar fichero \n3. Salir\nElija una opción: ";
+        return "\nMenú de operaciones:\n1. Mostrar lista de usuarios conectados \n2. Descargar fichero \n3. Subir fichero \n4. Salir \nElija una opción: ";
     }
 
     public void emitirFichero(MensajeEmitirFichero mensaje) throws Exception {
         // 3.2 Recibir Mensaje emitir fichero
-        System.out.println("Recibido mensaje emitir fichero de " + mensaje.getClienteID());
-        System.out.println("Fichero: " + mensaje.getFilename());
+        System.out.println("### Log cliente: Recibido mensaje emitir fichero de " + mensaje.getClienteID() + " ###");
+        System.out.println("### Log cliente: Fichero: " + mensaje.getFilename() + " ###");
 
         Thread emisor = new Thread(new Emisor(1235, mensaje.getFilename()));
         emisor.start();

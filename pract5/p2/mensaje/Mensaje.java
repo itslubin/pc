@@ -26,6 +26,8 @@ public abstract class Mensaje implements Serializable {
 	 * 8: Mensaje de fichero
 	 * 9: Mensaje de cerrar conexión
 	 * 10: Mensaje de error
+	 * 11: Mensaje de subir fichero
+	 * 12: Mensaje de confirmar subir fichero
 	 */
 
 	Mensaje(int id_from, int id_to) {
