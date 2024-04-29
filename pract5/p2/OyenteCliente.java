@@ -4,7 +4,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.Map;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.Semaphore;
 
 import pract5.p2.mensaje.*;
 
@@ -46,7 +46,7 @@ public class OyenteCliente implements Runnable {
             }
 
             out.writeObject(new MensajeConfConexion(clientID, clientID, "Conexión confirmada"));
-            servidor.registarLock(clientID, new ReentrantLock());
+            servidor.registarLock(clientID, new Semaphore(0));
             servidor.addConexion(clientID, new ConexionCliente(clientSocket, usuario, in, out));
 
             while (true) {
@@ -157,7 +157,7 @@ public class OyenteCliente implements Runnable {
                 	
                 	servidor.addFichero(((MensajeSubirFichero) mensaje).getFilename(), clientID);
                 	
-                	out.writeObject(new MensajeSubirFicheroConf(clientID, clientID, "### Log cliente: Fichero subido con exito ###"));
+                	out.writeObject(new MensajeSubirFicheroConf(clientID, clientID, "### Log cliente: Fichero compartido con exito ###"));
                 }
 
                 servidor.unlock(clientID);

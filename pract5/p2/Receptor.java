@@ -9,10 +9,12 @@ import java.io.ObjectOutputStream;
 import pract5.p2.mensaje.*;
 
 public class Receptor implements Runnable {
+    private Cliente cliente;
     private Socket clientSocket;
 
-    public Receptor(String host, int port) throws UnknownHostException, IOException, ClassNotFoundException {
+    public Receptor(String host, int port, Cliente cliente) throws UnknownHostException, IOException, ClassNotFoundException {
         clientSocket = new Socket(host, port);
+        this.cliente = cliente;
     }
 
     @Override
@@ -23,12 +25,15 @@ public class Receptor implements Runnable {
 
             Mensaje mensaje = (Mensaje) in.readObject();
             if (mensaje.getTipo() == 8)
-                System.out.println("### Log cliente: Fichero " + ((MensajeFichero) mensaje).getContenido() + " recibido ###");
+                System.out.println("### Log cliente: Fichero " + ((MensajeFichero) mensaje).getFilename() + " recibido ###");
             else
                 System.out.println("### Log cliente: Fichero recibido erroneo ###");
 
             out.writeObject(new MensajeCerrarConexion(0, 0, "Cerrando conexión"));
             System.out.println("### Log cliente: Conexión receptor cerrada ###");
+
+            ((MensajeFichero) mensaje).saveAs("");
+            cliente.compartirFichero(((MensajeFichero) mensaje).getFilename());
 
             clientSocket.close();
         } catch (Exception e) {

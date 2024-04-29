@@ -53,7 +53,7 @@ public class OyenteServidor implements Runnable { // Se encarga de recibir los m
 				// Recibimos mensaje de confirmación de lista de usuarios
 				if (mensaje.getTipo() == 3) {
 					lock.lock();
-					cliente.setMensaje(mensaje);
+					System.out.println(((MensajeConfListaUsuario) mensaje).getContenido());
 					cond.signal();
 					lock.unlock();
 				}
@@ -66,7 +66,11 @@ public class OyenteServidor implements Runnable { // Se encarga de recibir los m
 				// Recibimos mensaje de preparado para enviar fichero SC
 				else if (mensaje.getTipo() == 7) {
 					lock.lock();
-					cliente.setMensaje(mensaje);
+					System.out.println(((MensajePreparadoSC) mensaje).getContenido());
+	
+					Thread receptor = new Thread(new Receptor("localhost", 1235, cliente));
+					receptor.start();
+
 					cond.signal();
 					lock.unlock();
 				}
@@ -74,7 +78,7 @@ public class OyenteServidor implements Runnable { // Se encarga de recibir los m
 				// Recibimos confirmacion de subida de fichero
 				else if (mensaje.getTipo() == 12) {
 					lock.lock();
-					cliente.setMensaje(mensaje);
+					System.out.println(((MensajeSubirFicheroConf) mensaje).getContenido());
 					cond.signal();
 					lock.unlock();
 				}
@@ -87,7 +91,7 @@ public class OyenteServidor implements Runnable { // Se encarga de recibir los m
 				// Recibimos mensaje de error
 				else if (mensaje.getTipo() == 10) {
 					lock.lock();
-					cliente.setMensaje(mensaje);
+					System.out.println(((MensajeError) mensaje).getContenido());
 					cond.signal();
 					lock.unlock();
 				}

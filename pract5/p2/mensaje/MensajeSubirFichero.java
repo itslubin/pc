@@ -11,7 +11,6 @@ public class MensajeSubirFichero extends MensajeString {
 	
 	@Override
 	public int getTipo() {
-		// TODO Auto-generated method stub
 		return 11;
 	}
 	

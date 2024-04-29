@@ -1,5 +1,6 @@
 package pract5.p2;
 
+import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.Socket;
@@ -17,7 +18,6 @@ public class Cliente implements Serializable { // Se encarga del envio de mensaj
     private int ServerID;
     private Socket clientSocket;
     private ObjectOutputStream out;
-    private Mensaje mensaje;
     private Lock lock;
     private Condition cond;
 
@@ -72,53 +72,42 @@ public class Cliente implements Serializable { // Se encarga del envio de mensaj
 
                 // Esperar a que el servidor envíe la lista de usuarios
                 cond.await();
-                System.out.println(((MensajeConfListaUsuario) mensaje).getContenido());
                 lock.unlock();
             }
 
             else if (op == 2) { // Descargar fichero
-                lock.lock();
                 // 1.1 El cliente elige la opción de descargar fichero
                 System.out.println("Introduzca el fichero que quiere descargar: ");
                 String file_name = scanner.nextLine();
 
+                lock.lock();
                 // 2.1 Enviar el nombre del fichero
                 out.writeObject(new MensajePedirFichero(ClientID, ServerID, file_name));
 
                 // Esperar a que el servidor envíe el preparado SC
                 cond.await();
-                if (mensaje.getTipo() == 7) {
-                    System.out.println(((MensajePreparadoSC) mensaje).getContenido());
-
-                    Thread receptor = new Thread(new Receptor("localhost", 1235));
-                    receptor.start();
-                } else {
-                    System.out.println(((MensajeError) mensaje).getContenido());
-                }
                 lock.unlock();
             }
             
             else if (op == 3) { // Subir fichero
-            	lock.lock();
             	System.out.println("Introduzca el nombre del fichero que quiere subir: ");
             	String file_name = scanner.nextLine();
 
+            	lock.lock();
                 // 2.1 Enviar el nombre del fichero
                 out.writeObject(new MensajeSubirFichero(ClientID, ServerID, "Cliente " + ClientID + " sube el fichero " + file_name,  file_name));
+                
                 cond.await(); // Esperar a recibir el mensaje
-                
-                if (mensaje.getTipo() == 12) { // Recibir confirmacion
-                	System.out.println(((MensajeSubirFicheroConf) mensaje).getContenido());
-                }
-                
                 lock.unlock();
             }
 
             else if (op == 4) { // Salir
+                lock.lock();
                 // 1.1 El cliente elige la opción de cerrar conexión
                 out.writeObject(new MensajeCerrarConexion(ClientID, ServerID, String.valueOf(ClientID)
                         + " ha cerrado la conexión"));
                 System.out.println("Conexión cerrada");
+                lock.unlock();
 
                 break;
             }
@@ -145,9 +134,17 @@ public class Cliente implements Serializable { // Se encarga del envio de mensaj
         Thread emisor = new Thread(new Emisor(1235, mensaje.getFilename()));
         emisor.start();
 
+        lock.lock();
         // 4.1 Mensaje Preparado CS
         out.writeObject(new MensajePreparadoCS(ClientID, ServerID,
                 String.valueOf(ClientID) + " preparado para emitir fichero", mensaje.getClienteID()));
+        lock.unlock();
+    }
+
+    public void compartirFichero(String filename) throws IOException {
+        lock.lock();
+        out.writeObject(new MensajeSubirFichero(ClientID, ServerID, "Cliente " + ClientID + " sube el fichero " + filename,  filename));
+        lock.unlock();
     }
 
     public int getClientID() {
@@ -168,10 +165,6 @@ public class Cliente implements Serializable { // Se encarga del envio de mensaj
 
     public String getNombre() {
         return nombre;
-    }
-
-    public void setMensaje(Mensaje mensaje) {
-        this.mensaje = mensaje;
     }
 
     // Métodos para interactuar con el servidor y otros clientes

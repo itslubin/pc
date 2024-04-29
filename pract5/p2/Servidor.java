@@ -5,6 +5,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -25,7 +26,7 @@ public class Servidor {
     private Condition oktowrite;
 
     // Sincronización comunicación OC
-    private volatile Map<Integer, Lock> lockClientes; // Clave: ID_Usuario, Valor: Lock
+    private volatile Map<Integer, Semaphore> lockClientes; // Clave: ID_Usuario, Valor: Lock
 
     public Servidor(int puerto) throws IOException {
         serverSocket = new ServerSocket(puerto);
@@ -62,21 +63,21 @@ public class Servidor {
         return c;
     }
 
-    public void lock(int id) { // write
+    public void lock(int id) throws InterruptedException { // write
         request_write();
-        lockClientes.get(id).lock();
+        lockClientes.get(id).acquire();
         release_write();
     }
 
     public void unlock(int id) { // write
         request_write();
-        lockClientes.get(id).unlock();
+        lockClientes.get(id).release();
         release_write();
     }
 
-    public void registarLock(int id, Lock lock) {
+    public void registarLock(int id, Semaphore sem) {
         request_write();
-        lockClientes.put(id, lock);
+        lockClientes.put(id, sem);
         release_write();
     }
 
