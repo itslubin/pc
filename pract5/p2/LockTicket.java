@@ -1,6 +1,6 @@
 package pract5.p2;
 
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 
@@ -8,12 +8,12 @@ public class LockTicket implements Lock{
 	
 	private AtomicInteger number;
 	private int next;
-	private volatile ConcurrentHashMap<Integer, Integer> turn;
+	private volatile HashMap<Integer, Integer> turn;
 	
 	public LockTicket() {
 		this.number = new AtomicInteger(1);
 		this.next = 1;
-		this.turn = new ConcurrentHashMap<>();
+		this.turn = new HashMap<>();
 	}
 	
 	@Override
