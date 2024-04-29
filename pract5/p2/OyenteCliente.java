@@ -46,7 +46,7 @@ public class OyenteCliente implements Runnable {
             }
 
             out.writeObject(new MensajeConfConexion(clientID, clientID, "Conexión confirmada"));
-            servidor.registarLock(clientID, new Semaphore(0));
+            servidor.registarLock(clientID, new Semaphore(1));
             servidor.addConexion(clientID, new ConexionCliente(clientSocket, usuario, in, out));
 
             while (true) {

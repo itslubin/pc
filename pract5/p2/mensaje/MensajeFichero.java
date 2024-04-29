@@ -1,25 +1,38 @@
 package pract5.p2.mensaje;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 public class MensajeFichero extends Mensaje {
     private String filename;
-    private byte[] content;
 
     public MensajeFichero(int id_from, int id_to, String path) throws IOException {
         super(id_from, id_to);
 
-        Path p = Paths.get(path);
-        filename = p.getFileName().toString();
-        content = Files.readAllBytes(p);
+        filename = path;
     }
 
-    public void saveAs(String path) throws IOException{
-        path += filename;
-        Files.write(Paths.get(path), content);
+    public void save(int c) throws IOException{
+    	BufferedWriter outChars = null;
+    	BufferedReader inChars = null;
+    	try {
+    		inChars = new BufferedReader(new FileReader(filename));
+        	outChars = new BufferedWriter(new FileWriter("C" + c + filename));
+        	
+        	String line;
+    	    while ((line = inChars.readLine()) != null) {
+    	    	outChars.write(line); outChars.newLine();
+    	    }
+    	}
+    	
+    	finally {
+    		if (inChars != null) {inChars.close();}
+    		if (outChars != null) {outChars.close();}
+    	}
+        
     }
 
     public String getFilename() {

@@ -6,9 +6,6 @@ import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 public class Servidor {
     private int id = 0;
@@ -17,25 +14,14 @@ public class Servidor {
     private volatile Map<Integer, Usuario> usuariosRegistrados; // Clave: ID_Usuario, Valor: Usuario
     private volatile Map<Integer, ConexionCliente> conexionesClientes; // Clave: ID_Usuario, Valor: ConexionCliente
 
-    // Variables Lectores-escritores
-    int nr = 0;
-    int nw = 0;
-    int dw = 0;
-    private Lock lock;
-    private Condition oktoread;
-    private Condition oktowrite;
-
     // Sincronización comunicación OC
     private volatile Map<Integer, Semaphore> lockClientes; // Clave: ID_Usuario, Valor: Lock
 
     public Servidor(int puerto) throws IOException {
         serverSocket = new ServerSocket(puerto);
-        usuariosRegistrados = new HashMap<>();
-        conexionesClientes = new HashMap<>();
+        usuariosRegistrados = new ConcurrentMap<>();
+        conexionesClientes = new ConcurrentMap<>();
         lockClientes = new HashMap<>();
-        lock = new ReentrantLock();
-        oktoread = lock.newCondition();
-        oktowrite = lock.newCondition();
     }
 
     public void execute() throws IOException {
@@ -57,139 +43,56 @@ public class Servidor {
     }
 
     public int getNewId() throws InterruptedException { // Write
-        request_write();
         int c = ++counter;
-        release_write();
         return c;
     }
 
-    public void lock(int id) throws InterruptedException { // write
-        request_write();
+    public void lock(int id) throws InterruptedException {
         lockClientes.get(id).acquire();
-        release_write();
     }
 
-    public void unlock(int id) { // write
-        request_write();
+    public void unlock(int id) {
         lockClientes.get(id).release();
-        release_write();
     }
 
-    public void registarLock(int id, Semaphore sem) {
-        request_write();
+    public void registarLock(int id, Semaphore sem) { // write
         lockClientes.put(id, sem);
-        release_write();
     }
 
     public void registrarUsuario(int id, Usuario usuario) throws InterruptedException, IOException { // Write
-        request_write();
         usuariosRegistrados.put(id, usuario);
-        // debug
-        usuario.addInformacionCompartida(new Informacion("Amelie"));
-        usuario.addInformacionCompartida(new Informacion("Godfather"));
-        usuario.addInformacionCompartida(new Informacion("Titanic"));
-        release_write();
     }
 
     public Map<Integer, Usuario> getUsuariosRegistrados() { // Read
-        request_read();
-        Map<Integer, Usuario> aux = new HashMap<>(usuariosRegistrados);
-        release_read();
-        return aux;
+        return usuariosRegistrados;
     }
 
     public void addConexion(int id, ConexionCliente conexion) throws InterruptedException { // Write
-        request_write();
         conexionesClientes.put(id, conexion);
-        release_write();
     }
 
     public void removeConexion(int id) throws InterruptedException { // Write
-        request_write();
         conexionesClientes.remove(id);
-        release_write();
     }
     
     public void addFichero(String filename, int id) throws IOException { // write
-    	request_write();
     	usuariosRegistrados.get(id).addInformacionCompartida(new Informacion(filename));
-    	release_write();
     }
 
     public Map<Integer, ConexionCliente> getConexionesClientes() { // Read
-        request_read();
-        Map<Integer, ConexionCliente> aux = new HashMap<>(conexionesClientes);
-        release_read();
-        return aux;
+        return conexionesClientes;
     }
 
     public boolean buscarCliente(int id) { // Read
-        boolean c;
-        request_read();
-        c = usuariosRegistrados.containsKey(id);
-        release_read();
-        return c;
+        return usuariosRegistrados.containsKey(id);
     }
 
     public ConexionCliente getConexionCliente(int id) { // Read
-        request_read();
-        ConexionCliente cc = conexionesClientes.get(id);
-        release_read();
-        return cc;
+        return conexionesClientes.get(id);
     }
 
     public Usuario getUsuario(int clientID) { // Read
-        request_read();
-        Usuario u = usuariosRegistrados.get(clientID);
-        release_read();
-        return u;
-    }
-
-    public void request_read() {
-        lock.lock();
-        while (nw > 0) {
-            try {
-                oktoread.await();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-        nr++;
-        lock.unlock();
-    }
-
-    public void release_read() {
-        lock.lock();
-        nr--;
-        if (nr == 0)
-            oktowrite.signal();
-        lock.unlock();
-    }
-
-    public void request_write() {
-        lock.lock();
-        while (nr > 0 || nw > 0) {
-            try {
-                dw++;
-                oktowrite.await();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-        nw++;
-        lock.unlock();
-    }
-
-    public void release_write() {
-        lock.lock();
-        nw--;
-        if (dw > 0) {
-            dw--;
-            oktowrite.signal();
-        } else {
-            oktoread.signal();
-        }
-        lock.unlock();
+        return usuariosRegistrados.get(clientID);
     }
 
     // Métodos para la gestión de usuarios y conexiones
