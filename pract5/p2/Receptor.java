@@ -32,8 +32,8 @@ public class Receptor implements Runnable {
             out.writeObject(new MensajeCerrarConexion(0, 0, "Cerrando conexión"));
             System.out.println("### Log cliente: Conexión receptor cerrada ###");
 
-            ((MensajeFichero) mensaje).save(cliente.getClientID());
-            // cliente.compartirFichero(((MensajeFichero) mensaje).getFilename());
+            ((MensajeFichero) mensaje).save(cliente.getNombre() + cliente.getClientID());
+            cliente.compartirFichero(((MensajeFichero) mensaje).getFilename());
 
             clientSocket.close();
         } catch (Exception e) {

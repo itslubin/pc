@@ -46,16 +46,13 @@ public class OyenteCliente implements Runnable {
             }
 
             out.writeObject(new MensajeConfConexion(clientID, clientID, "Conexión confirmada"));
-            servidor.registarLock(clientID, new Semaphore(1));
+            servidor.registarLock(clientID, new LockTicket());
             servidor.addConexion(clientID, new ConexionCliente(clientSocket, usuario, in, out));
 
             while (true) {
 
                 // 1.2 Obtenemos el mensaje del usuario
                 mensaje = (Mensaje) in.readObject();
-
-                // Cojemos el lock del cliente
-                servidor.lock(clientID);
 
                 // El cliente quiere la lista
                 if (mensaje.getTipo() == 2) {
@@ -73,9 +70,15 @@ public class OyenteCliente implements Runnable {
                             listaUsuarios += contador2++ + ". " + i.getNombre() + "\n";
                         }
                     }
-
+                    
+                    // Cojemos el lock del cliente
+                    servidor.lock(clientID);
+                    
                     // 2.1 Manda la lista
                     out.writeObject(new MensajeConfListaUsuario(servidor.getID(), clientID, listaUsuarios));
+                    
+                    // Liberamos el lock del cliente
+                    servidor.unlock(clientID);
                 }
 
                 else if (mensaje.getTipo() == 4) { // El cliente quiere descargar un fichero
@@ -103,7 +106,8 @@ public class OyenteCliente implements Runnable {
                         // Llamar al Cliente emisor
                         ConexionCliente cc = servidor.getConexionCliente(emitorID);
                         ObjectOutputStream outE = cc.getOut();
-
+                        
+                        
                         // 3.1 Mensaje emitir fichero al cliente emisor
                         outE.writeObject(
                                 new MensajeEmitirFichero(servidor.getID(), emitorID, "Emito fichero", filename,
@@ -113,9 +117,15 @@ public class OyenteCliente implements Runnable {
                         servidor.unlock(emitorID);
 
                     } else {
+                    	// Cojemos el lock del cliente
+                        servidor.lock(clientID);
                         out.writeObject(new MensajeError(servidor.getID(), clientID,
                                 "### Log cliente: Error al recibir el mensaje preparado SC, el fichero " + filename
                                         + " no se ha encontrado ###"));
+                        
+                        // Liberamos el lock del cliente
+                        servidor.unlock(clientID);
+                        
                         System.out.println(
                                 "Fichero " + filename + " solicitado por el cliente " + clientID + " no encontrado");
                     }
@@ -145,8 +155,15 @@ public class OyenteCliente implements Runnable {
 
                 else if (mensaje.getTipo() == 9) { // Cerrar conexión
                     System.out.println(((MensajeCerrarConexion) mensaje).getContenido());
+                    
+                    // Cojemos el lock del cliente
+                    servidor.lock(clientID);
 
                     out.writeObject(new MensajeCerrarConexion(servidor.getID(), clientID, "Conexion cerrada"));
+                    
+                    // Liberamos el lock del cliente
+                    servidor.unlock(clientID);
+                    
                     // Quitamos al Cliente del servidor
                     servidor.removeConexion(clientID);
                     break;
@@ -157,10 +174,14 @@ public class OyenteCliente implements Runnable {
                 	
                 	servidor.addFichero(((MensajeSubirFichero) mensaje).getFilename(), clientID);
                 	
+                	// Cojemos el lock del cliente
+                    servidor.lock(clientID);
+                    
                 	out.writeObject(new MensajeSubirFicheroConf(clientID, clientID, "### Log cliente: Fichero compartido con exito ###"));
+                	
+                	// Liberamos el lock del cliente
+                    servidor.unlock(clientID);
                 }
-
-                servidor.unlock(clientID);
             }
 
             // Cierra la conexión

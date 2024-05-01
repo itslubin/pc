@@ -5,7 +5,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Semaphore;
 
 public class Servidor {
     private int id = 0;
@@ -15,12 +14,12 @@ public class Servidor {
     private volatile Map<Integer, ConexionCliente> conexionesClientes; // Clave: ID_Usuario, Valor: ConexionCliente
 
     // Sincronización comunicación OC
-    private volatile Map<Integer, Semaphore> lockClientes; // Clave: ID_Usuario, Valor: Lock
+    private volatile Map<Integer, LockTicket> lockClientes; // Clave: ID_Usuario, Valor: Lock
 
     public Servidor(int puerto) throws IOException {
         serverSocket = new ServerSocket(puerto);
-        usuariosRegistrados = new ConcurrentMap<>();
-        conexionesClientes = new ConcurrentMap<>();
+        usuariosRegistrados = new ConcurrentMap<>(new LESemaphore());
+        conexionesClientes = new ConcurrentMap<>(new LEMonitor());
         lockClientes = new HashMap<>();
     }
 
@@ -48,15 +47,15 @@ public class Servidor {
     }
 
     public void lock(int id) throws InterruptedException {
-        lockClientes.get(id).acquire();
+        lockClientes.get(id).takeLock(id);
     }
 
     public void unlock(int id) {
-        lockClientes.get(id).release();
+        lockClientes.get(id).releaseLock(id);
     }
 
-    public void registarLock(int id, Semaphore sem) { // write
-        lockClientes.put(id, sem);
+    public void registarLock(int id, LockTicket lock) { // write
+        lockClientes.put(id, lock);
     }
 
     public void registrarUsuario(int id, Usuario usuario) throws InterruptedException, IOException { // Write

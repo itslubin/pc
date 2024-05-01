@@ -15,12 +15,12 @@ public class MensajeFichero extends Mensaje {
         filename = path;
     }
 
-    public void save(int c) throws IOException{
+    public void save(String c) throws IOException{
     	BufferedWriter outChars = null;
     	BufferedReader inChars = null;
     	try {
     		inChars = new BufferedReader(new FileReader(filename));
-        	outChars = new BufferedWriter(new FileWriter("C" + c + filename));
+        	outChars = new BufferedWriter(new FileWriter(c + "_" + filename));
         	
         	String line;
     	    while ((line = inChars.readLine()) != null) {
